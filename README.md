@@ -1,4 +1,4 @@
-# Three Tier App DevOps with Azure
+# Three Tier App DevOps with AWS
 
 **Frontend**  
 [![CI pipeline](https://github.com/HasanAshab/three-tier-devops-azure/actions/workflows/frontend-ci.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-devops-azure/actions/workflows/frontend-ci.yaml)
@@ -36,7 +36,7 @@ Once running, the server will be accessible at:
 Frontend supports hot reload out of the box.
 
 ## 🏗️ Infrastructure
-Checkout the [IaC repository](https://github.com/HasanAshab/three-tier-devops-azure-infra) for this project's infrastructure.
+Read more about the [infrastructure](./infra/README.md).
 
 ## ⚙️ CI/CD Pipeline
 
