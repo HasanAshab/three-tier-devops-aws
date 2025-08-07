@@ -1,0 +1,47 @@
+services:
+  frontend:
+    build:
+      context: frontend
+    env_file: ./frontend/.env.dev
+    ports:
+      - 4200:4200
+    stdin_open: true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - backendfrontend-net
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: backend
+      target: dev
+    env_file: ./backend/.env.dev
+    ports:
+      - 8080:8080
+    volumes:
+      - ~/.m2:/root/.m2
+    networks:
+      - backenddb-net
+      - backendfrontend-net
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8
+    env_file: ./db/.env.dev
+    networks:
+      - backenddb-net
+    volumes:
+      - db-data:/var/lib/mysql
+    expose:
+      - 3306
+
+networks:
+  backendfrontend-net:
+  backenddb-net:
+
+volumes:
+  db-data:

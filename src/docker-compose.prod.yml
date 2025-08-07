@@ -1,0 +1,42 @@
+services:
+  frontend:
+    build:
+      context: frontend
+    env_file: ./frontend/.env.prod
+    ports:
+      - 4200:4200
+    networks:
+      - backendfrontend-net
+    depends_on:
+      - backend
+    
+
+  backend:
+    build:
+      context: backend
+      target: prod
+    env_file: ./backend/.env.prod
+    ports:
+      - 8080:8080
+    networks:
+      - backenddb-net
+      - backendfrontend-net
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8
+    env_file: ./db/.env.prod
+    networks:
+      - backenddb-net
+    volumes:
+      - db-data:/var/lib/mysql
+    expose:
+      - 3306
+
+networks:
+  backendfrontend-net:
+  backenddb-net:
+
+volumes:
+  db-data:

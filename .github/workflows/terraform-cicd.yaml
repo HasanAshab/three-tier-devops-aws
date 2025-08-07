@@ -1,0 +1,217 @@
+name: CI-CD pipeline
+on:
+  push:
+    paths:
+      - 'infra/**/*.tf'
+      - 'infra/envs/*.tfvars'
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'infra/**/*.tf'
+      - 'infra/envs/*.tfvars'
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+  TF_VAR_database_admin_password: Password@123
+
+  # ----- AWS -----
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  # ----- Azure -----
+  # ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  # ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  # ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  # ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+  
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Terraform fmt
+        uses: dflook/terraform-fmt-check@v2
+        with:
+          path: infra
+
+  lint:
+    name: TFLint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      name: Checkout source code
+
+    - uses: actions/cache@v4
+      with:
+        path: ~/.tflint.d/plugins
+        key: tflint-${{ hashFiles('infra/.tflint.hcl') }}
+
+    - uses: terraform-linters/setup-tflint@v4
+
+    - name: Init TFLint
+      working-directory: infra
+      run: tflint --init
+
+    - name: Run TFLint
+      working-directory: infra
+      run: tflint --config="$(pwd)/.tflint.hcl" --recursive
+
+  test:
+    name: Unit Test
+    strategy:
+      matrix:
+        workspace: [dev, prod]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Terraform Test
+        uses: dflook/terraform-test@v2
+        with:
+          path: infra
+          var_file: infra/envs/${{ matrix.workspace }}.tfvars
+
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Terraform Validate
+        uses: dflook/terraform-validate@v2
+
+  scan:
+    name: Security Scan
+    permissions:
+      contents: read
+      security-events: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: infra
+          output_format: cli,sarif
+          output_file_path: console,results.sarif
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: results.sarif
+
+  plan:
+    name: Plan
+    if: github.event_name == 'pull_request'
+    needs: [format, lint, test, validate, scan]
+    permissions:
+      contents: read
+      pull-requests: write
+    strategy:
+      matrix:
+        workspace: [dev, prod]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dflook/terraform-plan@v2
+        with:
+          path: infra
+          workspace: ${{ matrix.workspace }}
+          var_file: infra/envs/${{ matrix.workspace }}.tfvars
+
+  cost-estimation:
+    name: Pre-Deployment Cost Estimation
+    needs: plan
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: '${{ github.event.pull_request.base.ref }}'
+
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v3
+
+      - name: Generate Infracost cost estimate baseline
+        run: |
+          infracost breakdown --path=infra \
+                              --format=json \
+                              --out-file=/tmp/infracost-base.json
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Generate Infracost diff
+        run: |
+          infracost diff --path=infra \
+                          --format=json \
+                          --compare-to=/tmp/infracost-base.json \
+                          --out-file=/tmp/infracost.json
+
+      - name: Post Infracost comment
+        run: |
+            infracost comment github --path=/tmp/infracost.json \
+                                     --repo=$GITHUB_REPOSITORY \
+                                     --github-token=${{ env.GITHUB_TOKEN }} \
+                                     --pull-request=${{ github.event.pull_request.number }} \
+                                     --behavior=update
+
+  apply:
+    name: Apply
+    environment: production
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [format, lint, test, validate, scan]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Terraform Apply
+        uses: dflook/terraform-apply@v2
+        with:
+          path: infra
+          workspace: prod
+          var_file: infra/envs/prod.tfvars
+
+  cost-analysis:
+    name: Post-Deployment Cost Analysis and Report
+    needs: apply
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v3
+
+      - name: Generate Infracost cost estimate
+        run: |
+          infracost breakdown --path=infra \
+                              --format=json \
+                              --out-file=/tmp/post-deployment-cost.json
+
+      - name: Upload Cost Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-deployment-cost
+          path: /tmp/post-deployment-cost.json
+
+      - name: Send to Slack
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          payload-file-path: "/tmp/post-deployment-cost.json"
+          payload-templated: true
+          webhook: ${{ secrets.SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook

@@ -1,0 +1,70 @@
+name: Blue-Green Deployment
+description: Deploy to Blue slot then swap to Green slot
+inputs:
+  azure_client_id:
+    description: "Azure Client ID"
+    type: string
+    required: true
+  azure_tenant_id:
+    description: "Azure Tenant ID"
+    type: string
+    required: true
+  azure_subscription_id:
+    description: "Azure Subscription ID"
+    type: string
+    required: true
+  app_name_tag:
+    description: "Application Name Tag"
+    type: string
+    default: "three-tier-app"
+  role_tag:
+    description: "Role Tag"
+    type: string
+    required: true
+  image_ref:
+    description: "Image reference to deploy"
+    type: string
+    required: true
+  blue_slot_name:
+    description: "Blue Slot Name"
+    type: string
+    default: "staging"
+runs:
+  using: composite
+  steps:
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        client-id: ${{ inputs.azure_client_id }}
+        tenant-id: ${{ inputs.azure_tenant_id }}
+        subscription-id: ${{ inputs.azure_subscription_id }}
+
+    - name: Get WebApp IDs
+      id: webapp_ids
+      shell: bash
+      run: |
+        ids=$(az webapp list --query "[?tags.AppName=='${{ inputs.app_name_tag }}' && tags.Role=='${{ inputs.role_tag }}'].id" -o tsv)
+        ids_flat=$(echo "$ids" | tr '\n' ' ')
+        echo "ids=$ids_flat" >> "$GITHUB_OUTPUT"
+
+    - name: Deploy to Blue Slot using IDs
+      shell: bash
+      run: |
+        echo "Deploying Image: ${{ inputs.image_ref }}"
+        for id in ${{ steps.webapp_ids.outputs.ids }}; do
+          echo "Deploying to ${{ inputs.blue_slot_name }} slot of $id"
+          az webapp config container set \
+            --ids $id \
+            --slot ${{ inputs.blue_slot_name }} \
+            --container-image-name ${{ inputs.image_ref }}
+        done
+
+    - name: Swap Slots (Blue → Green)
+      shell: bash
+      run: |
+        for id in ${{ steps.webapp_ids.outputs.ids }}; do
+          echo "Swapping ${{ inputs.blue_slot_name }} slot to production for $id"
+          az webapp deployment slot swap \
+            --ids $id \
+            --slot ${{ inputs.blue_slot_name }}
+        done
