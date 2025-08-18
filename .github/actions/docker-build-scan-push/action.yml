@@ -81,7 +81,7 @@ runs:
       with:
         image-ref: ${{ steps.set_output.outputs.image_ref }}
         format: 'table'
-        exit-code: '0'
+        exit-code: '1'
         ignore-unfixed: true
         vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
