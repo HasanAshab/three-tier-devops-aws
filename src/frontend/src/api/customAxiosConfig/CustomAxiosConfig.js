@@ -5,7 +5,7 @@ const config = {
     baseUrl: "http://localhost:8080",
   },
   production: {
-    baseUrl: "http://backend.local:8080",
+    baseUrl: "/api",
   },
 }
   
