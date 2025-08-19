@@ -5,7 +5,7 @@ const config = {
     baseUrl: "http://localhost:8080",
   },
   production: {
-    baseUrl: "http://three-tier-alb-907699685.us-west-2.elb.amazonaws.com/api",
+    baseUrl: "/api",
   },
 }
   
