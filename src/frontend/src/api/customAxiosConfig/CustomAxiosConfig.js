@@ -5,13 +5,13 @@ const config = {
     baseUrl: "http://localhost:8080",
   },
   production: {
-    baseUrl: "http://localhost:5000",
+    baseUrl: "http://three-tier-alb-907699685.us-west-2.elb.amazonaws.com/api",
   },
 }
   
 // axios instance for making requests
 const axiosInstance = axios.create({
-  baseURL: config[import.meta.env.NODE_ENV].baseUrl,
+  baseURL: config[process.env.NODE_ENV].baseUrl,
 });
 
 // request interceptor for adding token

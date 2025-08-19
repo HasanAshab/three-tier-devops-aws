@@ -14,54 +14,110 @@ module "vpc" {
   enable_dns_support = true
 }
 
-resource "aws_security_group" "alb" {
-  name        = "alb-sg"
-  description = "Allow HTTP inbound to ALB"
-  vpc_id      = module.vpc.vpc_id
+module "alb" {
+  source = "terraform-aws-modules/alb/aws"
 
-  ingress {
-    description = "HTTP from anywhere"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+  name    = "${local.project_name}-alb"
+  vpc_id  = module.vpc.vpc_id
+  subnets = module.vpc.public_subnets
+
+  # Security Group
+  security_group_ingress_rules = {
+    all_http = {
+      from_port   = 80
+      to_port     = 80
+      ip_protocol = "tcp"
+      description = "HTTP web traffic"
+      cidr_ipv4   = "0.0.0.0/0"
+    }
+    all_https = {
+      from_port   = 443
+      to_port     = 443
+      ip_protocol = "tcp"
+      description = "HTTPS web traffic"
+      cidr_ipv4   = "0.0.0.0/0"
+    }
+  }
+  security_group_egress_rules = {
+    all = {
+      ip_protocol = "-1"
+      cidr_ipv4   = "10.0.0.0/16"
+    }
   }
 
-  egress {
-    description = "Allow all outbound"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+  # Turn on ALB Access Logs
+  # access_logs = {
+  #   bucket = "my-alb-logs"
+  # }
+
+  listeners = {
+    # ex-http-https-redirect = {
+    #   port     = 80
+    #   protocol = "HTTP"
+    #   redirect = {
+    #     port        = "443"
+    #     protocol    = "HTTPS"
+    #     status_code = "HTTP_301"
+    #   }
+    # }
+
+    http = {
+      port            = 80
+      protocol        = "HTTP"
+      forward = {
+        target_group_key = "frontend"
+      }
+
+      rules = {
+        backend = {
+          priority = 100
+          conditions = [{
+            path_pattern = {
+              values = ["/api/*"]
+            }
+          }]
+          actions = [{
+            type             = "forward"
+            target_group_key = "backend"
+          }]
+        }
+      }
+    }
+  }
+
+  target_groups = {
+    frontend = {
+      name_prefix      = "fe"
+      protocol         = "HTTP"
+      port             = 4200
+      target_type      = "ip"
+      create_attachment = false
+      health_check = {
+        port     = 4200
+        protocol = "HTTP"
+      }
+    }
+
+    backend = {
+      name_prefix      = "be"
+      protocol         = "HTTP"
+      port             = 8080
+      target_type      = "ip"
+      create_attachment = false
+      # Backend health check endpoint not implemented
+      # health_check = {
+      #   port     = 8080
+      #   protocol = "HTTP"
+      #   path     = "/health"
+      # }
+    }
+  }
+
+  tags = {
+    Environment = "Development"
+    Project     = local.project_name
   }
 }
-
-resource "aws_lb" "frontend" {
-  name               = "frontend-lb"
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb.id]
-  subnets            = module.vpc.public_subnets
-}
-
-resource "aws_lb_listener" "frontend" {
-  load_balancer_arn = aws_lb.frontend.arn
-  port              = 80
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.frontend.arn
-  }
-}
-
-resource "aws_lb_target_group" "frontend" {
-  name = "frontend-tg"
-  port     = 4200
-  protocol = "HTTP"
-  vpc_id   = module.vpc.vpc_id
-  target_type = "ip"
-}
-
 
 module "ecs" {
   source = "terraform-aws-modules/ecs/aws"
@@ -106,7 +162,10 @@ module "ecs" {
               protocol      = "tcp"
             }
           ]
-          readonlyRootFilesystem = true
+
+          # Nginx requires write access to /var/cache/nginx
+          readonlyRootFilesystem = false
+
           enable_cloudwatch_logging = true
           memoryReservation = 100
         }
@@ -114,7 +173,7 @@ module "ecs" {
 
       load_balancer = {
         service = {
-          target_group_arn = aws_lb_target_group.frontend.arn
+          target_group_arn = module.alb.target_groups["frontend"].arn
           container_name   = "frontend"
           container_port   = 4200
         }
@@ -126,7 +185,7 @@ module "ecs" {
           description                  = "Allow ALB to reach Frontend"
           from_port                    = 4200
           ip_protocol                  = "tcp"
-          referenced_security_group_id = aws_security_group.alb.id
+          referenced_security_group_id = module.alb.security_group_id
         }
       }
       security_group_egress_rules = {
@@ -138,15 +197,15 @@ module "ecs" {
     }
 
     backend = {
-      cpu    = 1024
+      cpu    = 512
       memory = 1024
 
       container_definitions = {
         backend = {
-          cpu       = 1024
+          cpu       = 512
           memory    = 1024
           essential = true
-          image     = "ghcr.io/hasanashab/three-tier-devops-aws-backend:latest"
+          image     = "ghcr.io/hasanashab/three-tier-devops-aws-frontend:latest" # todo
           portMappings = [
             {
               name          = "backend-8080-tcp"
@@ -168,19 +227,27 @@ module "ecs" {
               value = ""
             }
           ]
-          readonlyRootFilesystem = true
+          readonlyRootFilesystem = false #todo
           enable_cloudwatch_logging = true
           memoryReservation = 512
         }
       }
 
+      load_balancer = {
+        service = {
+          target_group_arn = module.alb.target_groups["backend"].arn
+          container_name   = "backend"
+          container_port   = 8080
+        }
+      }
+
       subnet_ids = module.vpc.private_subnets
       security_group_ingress_rules = {
-        frontend_ingress = {
-          description                  = "Allow Frontend to reach Backend"
+        alb_ingress = {
+          description                  = "Allow ALB to reach Backend"
           from_port                    = 8080
           ip_protocol                  = "tcp"
-          referenced_security_group_id = module.ecs.services["frontend"].security_group_id
+          referenced_security_group_id = module.alb.security_group_id
         }
       }
       security_group_egress_rules = {
