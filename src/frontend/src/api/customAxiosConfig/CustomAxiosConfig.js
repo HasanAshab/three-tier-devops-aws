@@ -8,7 +8,7 @@ const config = {
     baseUrl: "http://localhost:5000",
   },
 }
-
+  
 // axios instance for making requests
 const axiosInstance = axios.create({
   baseURL: config[import.meta.env.NODE_ENV].baseUrl,
