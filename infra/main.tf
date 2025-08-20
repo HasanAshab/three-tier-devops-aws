@@ -62,11 +62,19 @@ module "alb" {
     #   }
     # }
 
-    http = {
+    frontend = {
       port            = 80
       protocol        = "HTTP"
       forward = {
         target_group_key = "frontend"
+      }
+    }
+
+    backend = {
+      port            = 8080
+      protocol        = "HTTP"
+      forward = {
+        target_group_key = "backend"
       }
     }
   }
@@ -83,6 +91,20 @@ module "alb" {
         protocol = "HTTP"
       }
     }
+
+    backend = {
+      name_prefix      = "be"
+      protocol         = "HTTP"
+      port             = 8080
+      target_type      = "ip"
+      create_attachment = false
+      # Backend not implemented health check endpoint yet
+      # health_check = {
+      #   port     = 8080
+      #   protocol = "HTTP"
+      #   path     = "/health"
+      # }
+    }
   }
 
   tags = {
@@ -90,13 +112,6 @@ module "alb" {
     Project     = local.project_name
   }
 }
-
-resource "aws_service_discovery_private_dns_namespace" "ecs" {
-  name = "local"
-  vpc  = module.vpc.vpc_id
-  description = "Internal ECS Service Connect namespace"
-}
-
 
 module "ecs" {
   source = "terraform-aws-modules/ecs/aws"
@@ -212,19 +227,29 @@ module "ecs" {
         }
       }
 
-      service_connect_configuration = {
-        namespace = aws_service_discovery_private_dns_namespace.ecs.name
-        service = [{
-          client_alias = {
-            port     = 8080
-            dns_name = "backend"
-          }
-          port_name      = "backend-8080-tcp"
-          discovery_name = "backend"
-        }]
+      load_balancer = {
+        service = {
+          target_group_arn = module.alb.target_groups["backend"].arn
+          container_name   = "backend"
+          container_port   = 8080
+        }
       }
 
       subnet_ids = module.vpc.private_subnets
+      security_group_ingress_rules = {
+        alb_ingress = {
+          description                  = "Allow ALB to reach Backend"
+          from_port                    = 8080
+          ip_protocol                  = "tcp"
+          referenced_security_group_id = module.alb.security_group_id
+        }
+      }
+      security_group_egress_rules = {
+        all = {
+          ip_protocol = "-1"
+          cidr_ipv4   = "0.0.0.0/0"
+        }
+      }
     }
   }
 
