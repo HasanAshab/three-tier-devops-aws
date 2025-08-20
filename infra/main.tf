@@ -52,6 +52,7 @@ module "alb" {
   # }
 
   listeners = {
+    # Redirect HTTP to HTTPS
     # http-https-redirect = {
     #   port     = 80
     #   protocol = "HTTP"
@@ -98,7 +99,7 @@ module "alb" {
       port             = 8080
       target_type      = "ip"
       create_attachment = false
-      # Backend not implemented health check endpoint yet
+      # Backend health check endpoint not implemented yet
       # health_check = {
       #   port     = 8080
       #   protocol = "HTTP"
