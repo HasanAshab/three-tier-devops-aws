@@ -22,11 +22,13 @@ variable "enable_deletion_protection" {
 variable "db_name" {
   description = "Database name"
   type        = string
+  default = "mydb"
 }
 
 variable "db_username" {
   description = "Database username"
   type        = string
+  default = "hasanashab"
 }
 
 variable "db_password" {

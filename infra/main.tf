@@ -70,4 +70,8 @@ module "static_site_bucket" {
       }
     ]
   })
+
+  tags = {
+    Role = "frontend"
+  }
 }
