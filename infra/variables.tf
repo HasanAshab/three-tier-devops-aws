@@ -4,6 +4,12 @@ variable "aws_region" {
   type        = string
 }
 
+variable "enable_deletion_protection" {
+  description = "Deletion protection"
+  type        = bool
+  default     = false
+}
+
 
 # Database
 
@@ -35,8 +41,17 @@ variable "db_skip_final_snapshot" {
   default     = true
 }
 
-variable "db_deletion_protection" {
-  description = "Deletion protection"
-  type        = bool
-  default     = false
+
+# Backend 
+
+variable "backend_service_cpu" {
+  description = "Backend service CPU"
+  type        = number
+  default     = 1024
+}
+
+variable "backend_service_memory" {
+  description = "Backend service memory"
+  type        = number
+  default     = 2048
 }
