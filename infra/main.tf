@@ -4,40 +4,130 @@ module "vpc" {
   name = "${local.project_name}-vpc"
   cidr = local.vnet_cidr
 
-  azs             = ["${var.aws_region}a", "${var.aws_region}b", "${var.aws_region}c"]
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+  azs             = ["${var.aws_region}a", "${var.aws_region}b" /*, "${var.aws_region}c"*/]
+  private_subnets = ["10.0.1.0/24", "10.0.2.0/24" /*, "10.0.3.0/24"*/]
+  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24" /*, "10.0.103.0/24"*/]
 
   enable_nat_gateway = true
   single_nat_gateway = true
-  enable_dns_hostnames = true
-  enable_dns_support = true
+}
+
+module "db_sg" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "5.3.0"
+
+  name        = "db-sg"
+  description = "MySQL security group"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress_with_source_security_group_id = [
+    {
+      from_port                = 3306
+      to_port                  = 3306
+      protocol                 = "tcp"
+      source_security_group_id = module.ecs.services["backend"].security_group_id
+      description              = "Allow Backend"
+    },
+  ]
+}
+
+module "db" {
+  source = "terraform-aws-modules/rds/aws"
+
+  identifier = "${local.project_name}-db"
+
+  engine            = "mysql"
+  engine_version    = "8.0.43"
+  instance_class    = "db.t3.micro"
+  allocated_storage = 5
+
+  db_name  = "db"
+  username = "user"
+  password = var.db_password
+  port     = "3306"
+
+  manage_master_user_password = false
+  # iam_database_authentication_enabled = true
+  vpc_security_group_ids = [module.db_sg.security_group_id]
+
+  maintenance_window = "Mon:00:00-Mon:03:00"
+  backup_window      = "03:00-06:00"
+
+  ### Enable Enhanced Monitoring ###
+  # monitoring_interval    = "30"
+  # monitoring_role_name   = "MyRDSMonitoringRole"
+  # create_monitoring_role = true
+
+  tags = {
+    Owner       = "user"
+    Environment = "dev"
+  }
+
+  create_db_subnet_group = true
+  subnet_ids             = module.vpc.private_subnets
+  family                 = "mysql8.0"
+  major_engine_version   = "8.0"
+  deletion_protection    = false
+
+  parameters = [
+    {
+      name  = "character_set_client"
+      value = "utf8mb4"
+    },
+    {
+      name  = "character_set_server"
+      value = "utf8mb4"
+    }
+  ]
+
+  options = [
+    {
+      option_name = "MARIADB_AUDIT_PLUGIN"
+
+      option_settings = [
+        {
+          name  = "SERVER_AUDIT_EVENTS"
+          value = "CONNECT"
+        },
+        {
+          name  = "SERVER_AUDIT_FILE_ROTATIONS"
+          value = "37"
+        },
+      ]
+    },
+  ]
 }
 
 module "alb" {
   source = "terraform-aws-modules/alb/aws"
 
-  name    = "${local.project_name}-alb"
-  vpc_id  = module.vpc.vpc_id
-  subnets = module.vpc.public_subnets
+  name                       = "${local.project_name}-alb"
+  vpc_id                     = module.vpc.vpc_id
+  subnets                    = module.vpc.public_subnets
   enable_deletion_protection = false
 
-  # Security Group
   security_group_ingress_rules = {
-    all_http = {
+    all_http_80 = {
       from_port   = 80
       to_port     = 80
       ip_protocol = "tcp"
-      description = "HTTP web traffic"
+      description = "HTTP frotned traffic"
       cidr_ipv4   = "0.0.0.0/0"
     }
-    all_https = {
-      from_port   = 443
-      to_port     = 443
+    all_http_8080 = {
+      from_port   = 8080
+      to_port     = 8080
       ip_protocol = "tcp"
-      description = "HTTPS web traffic"
+      description = "HTTP backend traffic"
       cidr_ipv4   = "0.0.0.0/0"
     }
+    # all_https = {
+    #   from_port   = 443
+    #   to_port     = 443
+    #   ip_protocol = "tcp"
+    #   description = "HTTPS web traffic"
+    #   cidr_ipv4   = "0.0.0.0/0"
+    # }
   }
   security_group_egress_rules = {
     all = {
@@ -46,13 +136,13 @@ module "alb" {
     }
   }
 
-  # Turn on ALB Access Logs
+  ### Turn on ALB Access Logs ###
   # access_logs = {
   #   bucket = "my-alb-logs"
   # }
 
   listeners = {
-    # Redirect HTTP to HTTPS
+    ### Redirect HTTP to HTTPS ###
     # http-https-redirect = {
     #   port     = 80
     #   protocol = "HTTP"
@@ -64,16 +154,16 @@ module "alb" {
     # }
 
     frontend = {
-      port            = 80
-      protocol        = "HTTP"
+      port     = 80
+      protocol = "HTTP"
       forward = {
         target_group_key = "frontend"
       }
     }
 
     backend = {
-      port            = 8080
-      protocol        = "HTTP"
+      port     = 8080
+      protocol = "HTTP"
       forward = {
         target_group_key = "backend"
       }
@@ -82,10 +172,10 @@ module "alb" {
 
   target_groups = {
     frontend = {
-      name_prefix      = "fe"
-      protocol         = "HTTP"
-      port             = 4200
-      target_type      = "ip"
+      name_prefix       = "fe"
+      protocol          = "HTTP"
+      port              = 4200
+      target_type       = "ip"
       create_attachment = false
       health_check = {
         port     = 4200
@@ -94,10 +184,10 @@ module "alb" {
     }
 
     backend = {
-      name_prefix      = "be"
-      protocol         = "HTTP"
-      port             = 8080
-      target_type      = "ip"
+      name_prefix       = "be"
+      protocol          = "HTTP"
+      port              = 8080
+      target_type       = "ip"
       create_attachment = false
       # Backend health check endpoint not implemented yet
       # health_check = {
@@ -128,7 +218,6 @@ module "ecs" {
     }
   }
 
-  # Cluster capacity providers
   default_capacity_provider_strategy = {
     FARGATE = {
       weight = 50
@@ -162,7 +251,7 @@ module "ecs" {
           readonlyRootFilesystem = false
 
           enable_cloudwatch_logging = true
-          memoryReservation = 100
+          memoryReservation         = 100
         }
       }
 
@@ -192,15 +281,15 @@ module "ecs" {
     }
 
     backend = {
-      cpu    = 512
-      memory = 1024
+      cpu    = 1024
+      memory = 2048
 
       container_definitions = {
         backend = {
-          cpu       = 512
-          memory    = 1024
+          cpu       = 1024
+          memory    = 2048
           essential = true
-          image     = "ghcr.io/hasanashab/three-tier-devops-aws-frontend:latest" # todo
+          image     = "ghcr.io/hasanashab/three-tier-devops-aws-backend:latest" # todo
           portMappings = [
             {
               name          = "backend-8080-tcp"
@@ -211,20 +300,20 @@ module "ecs" {
           environment = [
             {
               name  = "SPRING_DATASOURCE_URL"
-              value = ""
+              value = "jdbc:mysql://${module.db.db_instance_address}:${module.db.db_instance_port}/${module.db.db_instance_name}?allowPublicKeyRetrieval=true&useSSL=true&createDatabaseIfNotExist=true&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Europe/Paris"
             },
             {
               name  = "SPRING_DATASOURCE_USERNAME"
-              value = ""
+              value = module.db.db_instance_username
             },
             {
               name  = "SPRING_DATASOURCE_PASSWORD"
-              value = ""
+              value = var.db_password
             }
           ]
-          readonlyRootFilesystem = false #todo
+          readonlyRootFilesystem    = true
           enable_cloudwatch_logging = true
-          memoryReservation = 512
+          memoryReservation         = 512
         }
       }
 
