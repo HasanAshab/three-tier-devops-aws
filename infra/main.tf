@@ -12,92 +12,22 @@ module "vpc" {
   single_nat_gateway = true
 }
 
-module "db_sg" {
-  source  = "terraform-aws-modules/security-group/aws"
-  version = "5.3.0"
-
-  name        = "db-sg"
-  description = "MySQL security group"
-  vpc_id      = module.vpc.vpc_id
-
-  ingress_with_source_security_group_id = [
-    {
-      from_port                = 3306
-      to_port                  = 3306
-      protocol                 = "tcp"
-      source_security_group_id = module.ecs.services["backend"].security_group_id
-      description              = "Allow Backend"
-    },
-  ]
-}
-
 module "db" {
-  source = "terraform-aws-modules/rds/aws"
+  source = "./modules/db"
 
-  identifier = "${local.project_name}-db"
-
-  engine            = "mysql"
-  engine_version    = "8.0.43"
-  instance_class    = "db.t3.micro"
-  allocated_storage = 5
-
-  db_name  = "db"
-  username = "user"
+  name_prefix = local.project_name
+  vpc_id = module.vpc.vpc_id
+  subnet_ids  = module.vpc.private_subnets
+  source_security_group_id = module.ecs.services["backend"].security_group_id
+  db_name = var.db_name
+  username = var.db_username
   password = var.db_password
-  port     = "3306"
-  manage_master_user_password = false
-  # iam_database_authentication_enabled = true
 
-  vpc_security_group_ids = [module.db_sg.security_group_id]
-
-  maintenance_window = "Mon:00:00-Mon:03:00"
-  backup_window      = "03:00-06:00"
-
-  ### Enable Enhanced Monitoring ###
-  # monitoring_interval    = "30"
-  # monitoring_role_name   = "MyRDSMonitoringRole"
-  # create_monitoring_role = true
-
-  tags = {
-    Owner       = "user"
-    Environment = "dev"
-  }
-
-  create_db_subnet_group = true
-  subnet_ids             = module.vpc.private_subnets
-  family                 = "mysql8.0"
-  major_engine_version   = "8.0"
-  skip_final_snapshot    = true
-  deletion_protection    = false
-
-  parameters = [
-    {
-      name  = "character_set_client"
-      value = "utf8mb4"
-    },
-    {
-      name  = "character_set_server"
-      value = "utf8mb4"
-    }
-  ]
-
-  options = [
-    {
-      option_name = "MARIADB_AUDIT_PLUGIN"
-
-      option_settings = [
-        {
-          name  = "SERVER_AUDIT_EVENTS"
-          value = "CONNECT"
-        },
-        {
-          name  = "SERVER_AUDIT_FILE_ROTATIONS"
-          value = "37"
-        },
-      ]
-    },
-  ]
+  apply_immediately = var.db_apply_immediately
+  skip_final_snapshot = var.db_skip_final_snapshot
+  deletion_protection = var.db_deletion_protection
 }
+
 
 module "alb" {
   source = "terraform-aws-modules/alb/aws"

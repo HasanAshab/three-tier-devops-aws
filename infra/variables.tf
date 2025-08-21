@@ -4,8 +4,39 @@ variable "aws_region" {
   type        = string
 }
 
+
+# Database
+
+variable "db_name" {
+  description = "Database name"
+  type        = string
+}
+
+variable "db_username" {
+  description = "Database username"
+  type        = string
+}
+
 variable "db_password" {
   description = "Database password"
   type        = string
   # sensitive = true
+}
+
+variable "db_apply_immediately" {
+  description = "Apply changes immediately"
+  type        = bool
+  default     = true
+}
+
+variable "db_skip_final_snapshot" {
+  description = "Skip final snapshot"
+  type        = bool
+  default     = true
+}
+
+variable "db_deletion_protection" {
+  description = "Deletion protection"
+  type        = bool
+  default     = false
 }

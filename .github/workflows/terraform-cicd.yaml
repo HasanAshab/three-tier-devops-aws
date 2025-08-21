@@ -1,16 +1,18 @@
 name: Terraform CI-CD pipeline
 on:
-  push:
-    paths:
-      - 'infra/**/*.tf'
-      - 'infra/envs/*.tfvars'
+  workflow_dispatch:
+  # Disabled for now to avoid rate limits
+  # push:
+  #   paths:
+  #     - 'infra/**/*.tf'
+  #     - 'infra/envs/*.tfvars'
 
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'infra/**/*.tf'
-      - 'infra/envs/*.tfvars'
+  # pull_request:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'infra/**/*.tf'
+  #     - 'infra/envs/*.tfvars'
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
