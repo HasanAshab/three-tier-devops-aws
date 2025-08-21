@@ -34,4 +34,4 @@ jobs:
 
       - name: Sync to S3
         run: |
-          aws s3 sync ./dist s3://three-tier-fe-static-site --delete
+          aws s3 sync ./build s3://three-tier-fe-static-site --delete
