@@ -5,7 +5,7 @@ const config = {
     baseUrl: "http://localhost:8080",
   },
   production: {
-    baseUrl: window.location.protocol + '//' + window.location.hostname + ":8080",
+    baseUrl: "http://api.three-tier-app.com",
   },
 }
   

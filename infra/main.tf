@@ -108,18 +108,11 @@ module "alb" {
   enable_deletion_protection = false
 
   security_group_ingress_rules = {
-    all_http_80 = {
+    all_http = {
       from_port   = 80
       to_port     = 80
       ip_protocol = "tcp"
-      description = "HTTP frotned traffic"
-      cidr_ipv4   = "0.0.0.0/0"
-    }
-    all_http_8080 = {
-      from_port   = 8080
-      to_port     = 8080
-      ip_protocol = "tcp"
-      description = "HTTP backend traffic"
+      description = "HTTP web traffic"
       cidr_ipv4   = "0.0.0.0/0"
     }
     # all_https = {
@@ -153,17 +146,8 @@ module "alb" {
     #     status_code = "HTTP_301"
     #   }
     # }
-
-    frontend = {
-      port     = 80
-      protocol = "HTTP"
-      forward = {
-        target_group_key = "frontend"
-      }
-    }
-
     backend = {
-      port     = 8080
+      port     = 80
       protocol = "HTTP"
       forward = {
         target_group_key = "backend"
@@ -172,22 +156,10 @@ module "alb" {
   }
 
   target_groups = {
-    frontend = {
-      name_prefix       = "fe"
-      protocol          = "HTTP"
-      port              = 4200
-      target_type       = "ip"
-      create_attachment = false
-      health_check = {
-        port     = 4200
-        protocol = "HTTP"
-      }
-    }
-
     backend = {
       name_prefix       = "be"
       protocol          = "HTTP"
-      port              = 8080
+      port              = 80
       target_type       = "ip"
       create_attachment = false
       # Backend health check endpoint not implemented yet
@@ -230,57 +202,6 @@ module "ecs" {
   }
 
   services = {
-    frontend = {
-      cpu    = 512
-      memory = 1024
-
-      container_definitions = {
-        frontend = {
-          cpu       = 512
-          memory    = 1024
-          essential = true
-          image     = "ghcr.io/hasanashab/three-tier-devops-aws-frontend:latest"
-          portMappings = [
-            {
-              name          = "frontend-4200-tcp"
-              containerPort = 4200
-              protocol      = "tcp"
-            }
-          ]
-
-          # Nginx requires write access to /var/cache/nginx
-          readonlyRootFilesystem = false
-
-          enable_cloudwatch_logging = true
-          memoryReservation         = 100
-        }
-      }
-
-      load_balancer = {
-        service = {
-          target_group_arn = module.alb.target_groups["frontend"].arn
-          container_name   = "frontend"
-          container_port   = 4200
-        }
-      }
-
-      subnet_ids = module.vpc.private_subnets
-      security_group_ingress_rules = {
-        alb_ingress = {
-          description                  = "Allow ALB to reach Frontend"
-          from_port                    = 4200
-          ip_protocol                  = "tcp"
-          referenced_security_group_id = module.alb.security_group_id
-        }
-      }
-      security_group_egress_rules = {
-        all = {
-          ip_protocol = "-1"
-          cidr_ipv4   = "0.0.0.0/0"
-        }
-      }
-    }
-
     backend = {
       cpu    = 1024
       memory = 2048
@@ -290,7 +211,7 @@ module "ecs" {
           cpu       = 1024
           memory    = 2048
           essential = true
-          image     = "ghcr.io/hasanashab/three-tier-devops-aws-backend:latest" # todo
+          image     = "ghcr.io/hasanashab/three-tier-devops-aws-backend:latest"
           portMappings = [
             {
               name          = "backend-8080-tcp"
