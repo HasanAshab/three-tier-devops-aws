@@ -270,3 +270,36 @@ module "ecs" {
     Project     = local.project_name
   }
 }
+
+
+module "static_site_bucket" {
+  source  = "terraform-aws-modules/s3-bucket/aws"
+  version = "5.5.0"
+
+  bucket = "${local.project_name}-fe-static-site"
+
+  # Enable static website hosting
+  website = {
+    index_document = "index.html"
+    error_document = "error.html"
+  }
+
+  # Public access block settings (must allow public for website hosting)
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+
+  attach_policy = true
+  policy        = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = "*"
+        Action   = ["s3:GetObject"]
+        Resource = "arn:aws:s3:::${local.project_name}-fe-static-site/*"
+      }
+    ]
+  })
+}
