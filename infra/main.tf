@@ -45,9 +45,9 @@ module "db" {
   username = "user"
   password = var.db_password
   port     = "3306"
-
   manage_master_user_password = false
   # iam_database_authentication_enabled = true
+
   vpc_security_group_ids = [module.db_sg.security_group_id]
 
   maintenance_window = "Mon:00:00-Mon:03:00"
@@ -67,6 +67,7 @@ module "db" {
   subnet_ids             = module.vpc.private_subnets
   family                 = "mysql8.0"
   major_engine_version   = "8.0"
+  skip_final_snapshot    = true
   deletion_protection    = false
 
   parameters = [
