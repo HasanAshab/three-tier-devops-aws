@@ -92,7 +92,7 @@ variable "skip_final_snapshot" {
   type        = bool
 }
 
-variable "deletion_protection" {
+variable "enable_deletion_protection" {
   description = "Deletion protection"
   type        = bool
 }

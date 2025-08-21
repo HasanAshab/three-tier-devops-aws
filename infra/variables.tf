@@ -1,7 +1,13 @@
 variable "aws_region" {
   description = "AWS region"
-  default     = "us-west-2"
   type        = string
+  default     = "us-west-2"
+}
+
+variable "azs_count" {
+  description = "Number of availability zones"
+  type        = number
+  default = 1
 }
 
 variable "enable_deletion_protection" {

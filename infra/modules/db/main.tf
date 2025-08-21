@@ -50,7 +50,7 @@ module "aws_rds" {
   major_engine_version   = local.major_engine_version
   apply_immediately      = var.apply_immediately
   skip_final_snapshot    = var.skip_final_snapshot
-  deletion_protection    = var.deletion_protection
+  deletion_protection    = var.enable_deletion_protection
   parameters = [
     {
       name  = "character_set_client"
