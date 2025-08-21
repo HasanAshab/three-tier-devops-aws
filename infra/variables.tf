@@ -19,6 +19,12 @@ variable "enable_deletion_protection" {
 
 # Database
 
+variable "db_instance_class" {
+  description = "Database instance class"
+  type        = string
+  default = "db.t3.micro"
+}
+
 variable "db_name" {
   description = "Database name"
   type        = string

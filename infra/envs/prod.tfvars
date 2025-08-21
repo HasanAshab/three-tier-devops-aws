@@ -2,6 +2,7 @@ azs_count = 3
 enable_deletion_protection = true
 
 # Database
+db_instance_class = 
 db_apply_immediately = false
 db_skip_final_snapshot = false
 

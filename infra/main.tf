@@ -13,6 +13,7 @@ module "db" {
   vpc_id = module.network.vpc_id
   subnet_ids  = module.network.private_subnets
   source_security_group_id = module.backend.security_group_id
+  instance_class = var.db_instance_class
   db_name = var.db_name
   username = var.db_username
   password = var.db_password

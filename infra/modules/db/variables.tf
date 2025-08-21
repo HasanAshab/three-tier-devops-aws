@@ -33,7 +33,6 @@ variable "engine_version" {
 variable "instance_class" {
   description = "Database instance class"
   type        = string
-  default = "db.t3.micro"  
 }
 
 variable "db_name" {
