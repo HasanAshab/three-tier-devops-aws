@@ -3,6 +3,10 @@ name: Deploy Frontemd to S3
 on:
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: src/frontend
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
