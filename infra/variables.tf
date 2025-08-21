@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "azs_count" {
   description = "Number of availability zones"
   type        = number
-  default = 1
+  default = 2
 }
 
 variable "enable_deletion_protection" {

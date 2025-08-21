@@ -1,4 +1,5 @@
 locals {
-  major_engine_version = coalesce(var.major_engine_version,  regex_replace(var.engine_version, "^([0-9]+\\.[0-9]+).*", "$1"))
+  _parts = split(".", var.engine_version)
+  major_engine_version = coalesce(var.major_engine_version, "${local._parts[0]}.${local._parts[1]}")
   family = coalesce(var.family, "${var.engine}${local.major_engine_version}")
 }

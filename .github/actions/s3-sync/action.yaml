@@ -1,0 +1,52 @@
+name: Sync S3 Bucket
+description: Sync Frontend build artifacts to S3 Bucket
+
+inputs:
+  aws_access_key_id:
+    description: "AWS Access Key ID"
+    type: string
+    required: true
+  aws_secret_access_key:
+    description: "AWS Secret Access Key"
+    type: string
+    required: true
+  aws_region:
+    description: "AWS Region"
+    type: string
+    required: true
+  bucket_name:
+    description: "S3 Bucket Name"
+    type: string
+    required: true
+ 
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: npm
+        cache-dependency-path: src/frontend/package-lock.json
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: src/frontend
+      run: npm ci
+
+    - name: Build project
+      shell: bash
+      working-directory: src/frontend
+      run: npm run build
+
+    - uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ inputs.aws_access_key_id }}
+        aws-secret-access-key: ${{ inputs.aws_secret_access_key }}
+        aws-region: ${{ inputs.aws_region }}
+
+    - name: Sync to S3
+      shell: bash
+      working-directory: src/frontend
+      run: |
+        aws s3 sync ./build s3://${{ inputs.bucket_name }} --delete

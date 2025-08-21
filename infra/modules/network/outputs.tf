@@ -1,11 +1,11 @@
-output "db_instance_name" {
-  value = module.db.db_instance_name
+output "vpc_id" {
+  value = module.vpc.vpc_id
 }
 
-output "db_instance_address" {
-  value = module.db.db_instance_address
+output "private_subnets" {
+  value = module.vpc.private_subnets
 }
 
-output "db_instance_port" {
-  value = module.db.db_instance_port
+output "public_subnets" {
+  value = module.vpc.public_subnets
 }

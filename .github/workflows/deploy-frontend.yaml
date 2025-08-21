@@ -1,4 +1,5 @@
-name: Deploy Frontemd to S3
+name: Deploy Frontend to S3
+description: Deploy the Frontend with a manual trigger
 
 on:
   workflow_dispatch:
@@ -12,26 +13,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/s3-sync
         with:
-          node-version: 18
-          cache: npm
-          cache-dependency-path: src/frontend/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build project
-        run: npm run build
-
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-
-      - name: Sync to S3
-        run: |
-          aws s3 sync ./build s3://three-tier-fe-static-site --delete
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ secrets.AWS_REGION }}
+          bucket_name: ${{ secrets.S3_BUCKET }}

@@ -1,7 +1,4 @@
-output "db_instance_name" {
-  value = module.db.db_instance_name
-}
-
-output "db_instance_address" {
-  value = module.db.db_instance_address
+output "security_group_id" {
+  description = "Security group ID of the Backend ECS Service"
+  value = module.ecs.services["backend"].security_group_id
 }

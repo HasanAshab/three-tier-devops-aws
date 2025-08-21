@@ -17,99 +17,52 @@ defaults:
     working-directory: src/frontend
 
 jobs:
-  # test:
-  #   name: Run Integration and Unit tests
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 18
-  #         cache: npm
-  #         cache-dependency-path: src/frontend/package-lock.json
-      
-  #     - name: Install dependencies
-  #       run: npm ci 
-
-  #     - name: Run tests
-  #       run: npm run test
-
-  # lint:
-  #   name: Run lint
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-      
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 18
-  #         cache: npm
-  #         cache-dependency-path: src/frontend/package-lock.json
-          
-  #     - name: Install dependencies
-  #       run: npm ci 
-
-  #     - name: Run linter
-  #       run: npm run lint
-
-  # build:
-  #   name: Build
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-  #   needs: [test, lint]
-
-  #   steps:
-  #     - uses: actions/checkout@v4
-  
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 18
-  #         cache: npm
-  #         cache-dependency-path: src/frontend/package-lock.json
-
-  
-  #     - name: Build project
-  #       run: npm run build
-
-  #     - name: Upload build artifacts
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: build-artifacts
-  #         path: build
-
-  docker:
-    name: Build and push docker image
+  test:
+    name: Run Integration and Unit tests
     runs-on: ubuntu-latest
-    # needs: [test, lint]
-    outputs:
-      image_tag: ${{ steps.build-scan-push.outputs.image_tag }}
-      image_tag_short: ${{ steps.build-scan-push.outputs.image_tag_short }}
-      image_ref: ${{ steps.build-scan-push.outputs.image_ref }}
     steps:
       - uses: actions/checkout@v4
 
-      - uses: ./.github/actions/docker-build-scan-push
-        id: build-scan-push
+      - uses: actions/setup-node@v4
         with:
-          suffix: frontend
-          registry: ghcr.io
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-  
-  # blue-green-deploy:
-  #   name: Blue-Green Deployment
-  #   runs-on: ubuntu-latest
-  #   needs: docker
-  #   permissions:
-  #     contents: read
-  #     id-token: write
-  #   steps:
-  #     - uses: actions/checkout@v4
+          node-version: 18
+          cache: npm
+          cache-dependency-path: src/frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: npm ci 
 
-  #     - uses: ./.github/actions/blue-green-deploy
-  #       with:
-  #         role_tag: Frontend
-  #         image_ref: ${{ needs.docker.outputs.image_ref }}
-  #         azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
-  #         azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
-  #         azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      - name: Run tests
+        run: npm run test
+
+  lint:
+    name: Run lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: src/frontend/package-lock.json
+          
+      - name: Install dependencies
+        run: npm ci 
+
+      - name: Run linter
+        run: npm run lint
+
+  s3_sync:
+    name: Deploy to S3
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/s3-sync
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ secrets.AWS_REGION }}
+          bucket_name: ${{ secrets.S3_BUCKET }}
