@@ -32,7 +32,6 @@ module "aws_rds" {
   password = var.password
   port     = tostring(var.port)
   manage_master_user_password = false
-  # iam_database_authentication_enabled = true
 
   vpc_security_group_ids = [module.aws_sg.security_group_id]
 
@@ -40,8 +39,8 @@ module "aws_rds" {
   backup_window      = var.backup_window
 
   ### Enable Enhanced Monitoring ###
-  # monitoring_interval    = "30"
-  # monitoring_role_name   = "MyRDSMonitoringRole"
+  # monitoring_interval    = "60"
+  # monitoring_role_name   = "RDSMonitoringRole"
   # create_monitoring_role = true
 
   create_db_subnet_group = true
@@ -51,31 +50,6 @@ module "aws_rds" {
   apply_immediately      = var.apply_immediately
   skip_final_snapshot    = var.skip_final_snapshot
   deletion_protection    = var.enable_deletion_protection
-  parameters = [
-    {
-      name  = "character_set_client"
-      value = "utf8mb4"
-    },
-    {
-      name  = "character_set_server"
-      value = "utf8mb4"
-    }
-  ]
-
-  options = [
-    {
-      option_name = "MARIADB_AUDIT_PLUGIN"
-
-      option_settings = [
-        {
-          name  = "SERVER_AUDIT_EVENTS"
-          value = "CONNECT"
-        },
-        {
-          name  = "SERVER_AUDIT_FILE_ROTATIONS"
-          value = "37"
-        },
-      ]
-    },
-  ]
+  parameters = local.parameters
+  options = local.options
 }
