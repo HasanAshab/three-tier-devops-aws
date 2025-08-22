@@ -35,7 +35,7 @@ module "backend" {
 
   db_host = module.db.db_instance_address
   db_name = module.db.db_instance_name
-  db_username = var.db_username
+  db_username = module.db.db_instance_username
   db_password = var.db_password
 
   enable_deletion_protection = var.enable_deletion_protection
@@ -71,8 +71,4 @@ module "static_site_bucket" {
       }
     ]
   })
-
-  tags = {
-    Role = "frontend"
-  }
 }
