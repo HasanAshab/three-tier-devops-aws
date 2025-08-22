@@ -1,13 +1,10 @@
 # Three Tier Architecture AWS
 
-A repo containing terraform best practices. Save time :)
 
-Note: this boilerplate is currently intended for my personal use.
+[![CI-CD pipeline](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/cicd.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/cicd.yaml)
+[![Drift Detection](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/drift.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/drift.yaml)
 
-[![CI-CD pipeline](https://github.com/HasanAshab/spring-react-devops-aws-infra/actions/workflows/cicd.yaml/badge.svg)](https://github.com/HasanAshab/spring-react-devops-aws-infra/actions/workflows/cicd.yaml)
-[![Drift Detection](https://github.com/HasanAshab/spring-react-devops-aws-infra/actions/workflows/drift.yaml/badge.svg)](https://github.com/HasanAshab/spring-react-devops-aws-infra/actions/workflows/drift.yaml)
-
-This repository contains the infrastructure (IaC) for [Spring + React App](https://github.com/HasanAshab/spring-react-devops-aws/) project.
+This repository contains the infrastructure (IaC) for [Spring + React App](https://github.com/HasanAshab/three-tier-aws/) project.
 
 
 ## 🏗️ Architecture Diagram

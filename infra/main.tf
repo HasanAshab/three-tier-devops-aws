@@ -45,11 +45,11 @@ module "backend" {
 ###########################
 # 1️⃣ S3 Bucket
 ###########################
-module "static_site_bucket" {
+module "s3_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "5.5.0"
 
-  bucket = "${local.project_name}-fe-static-site" #todo
+  bucket = "${local.project_name}-static-site" #todo
 
   # Website hosting
   website = {
@@ -63,96 +63,61 @@ module "static_site_bucket" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 
-  attach_policy = false # We'll attach OAI policy instead
-
   tags = {
     Owner       = "user"
     Environment = "dev"
   }
 }
 
-###########################
-# 2️⃣ CloudFront OAI
-###########################
-resource "aws_cloudfront_origin_access_identity" "oai" {
-  comment = "OAI for ${local.project_name} S3 bucket"
-}
+module "cdn" {
+  source = "terraform-aws-modules/cloudfront/aws"
 
-###########################
-# 3️⃣ S3 Bucket Policy for OAI
-###########################
-resource "aws_s3_bucket_policy" "bucket_policy" {
-  bucket = module.static_site_bucket.s3_bucket_id
+  ### Domain Name ###
+  # aliases = ["three-tier-app.com"]
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect    = "Allow"
-        Principal = {
-          AWS = aws_cloudfront_origin_access_identity.oai.iam_arn
-        }
-        Action   = "s3:GetObject"
-        Resource = "arn:aws:s3:::${module.static_site_bucket.s3_bucket_id}/*"
+  comment             = "CloudFront for ${local.project_name} static site"
+  enabled             = true
+  is_ipv6_enabled     = true
+  price_class         = "PriceClass_100"
+  retain_on_delete    = false
+
+
+  ### Enable Logging ###
+  # logging_config = {
+  #   bucket = "logs-my-cdn.s3.amazonaws.com"
+  # }
+
+  origin = {
+    s3 = {
+      domain_name = module.s3_bucket.s3_bucket_bucket_domain_name
+      s3_origin_config = {
+        origin_access_identity = "s3_oai"
       }
-    ]
-  })
-}
-
-###########################
-# 4️⃣ CloudFront Distribution
-###########################
-resource "aws_cloudfront_distribution" "static_site" {
-  enabled = true
-  is_ipv6_enabled = true
-  default_root_object = "index.html"
-
-  origin {
-    domain_name = module.static_site_bucket.s3_bucket_bucket_regional_domain_name
-    origin_id   = "S3-${module.static_site_bucket.s3_bucket_id}"
-
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.oai.cloudfront_access_identity_path
     }
   }
 
-  default_cache_behavior {
-    target_origin_id = "S3-${module.static_site_bucket.s3_bucket_id}"
+  create_origin_access_identity = true
+  origin_access_identities = {
+    s3_oai = "Allow CloudFront to access S3"
+  }
 
-    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
-    cached_methods   = ["GET", "HEAD"]
-
+  default_cache_behavior = {
+    target_origin_id       = "s3"
     viewer_protocol_policy = "redirect-to-https"
-    compress               = true
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
 
-    forwarded_values {
+    forwarded_values = {
       query_string = false
-      cookies {
-        forward = "none"
-      }
+      cookies      = { forward = "none" }
     }
   }
 
-  restrictions {
-    geo_restriction {
-      restriction_type = "none"
-    }
-  }
-
-  viewer_certificate {
+  viewer_certificate = {
     cloudfront_default_certificate = true
   }
-
-  tags = {
-    Owner       = "user"
-    Environment = "dev"
-  }
 }
 
-###########################
-# 5️⃣ Optional Output
-###########################
-output "cloudfront_url" {
-  value = aws_cloudfront_distribution.static_site.domain_name
-  description = "Use this URL to access your static site"
+output "cloudfront_domain" {
+  value = module.cdn.cloudfront_distribution_domain_name
 }
