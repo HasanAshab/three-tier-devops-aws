@@ -45,9 +45,6 @@ module "backend" {
 */
 
 
-###########################
-# 1️⃣ S3 Bucket
-###########################
 module "s3_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "5.5.0"
@@ -110,21 +107,39 @@ module "cdn" {
   origin = {
     s3 = {
       domain_name = module.s3_bucket.s3_bucket_bucket_regional_domain_name
-      origin_access_control = "s3_oac"
+      origin_access_control = "s3_oac" # see `origin_access_control`
     }
   }
 
   default_cache_behavior = {
-    target_origin_id       = "s3"
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
+    target_origin_id         = "s3" # see`origin`
+    viewer_protocol_policy   = "redirect-to-https"
+    
+    allowed_methods          = ["GET", "HEAD", "OPTIONS"]
+    cached_methods           = ["GET", "HEAD"]
+    
+    use_forwarded_values     = false
 
-    forwarded_values = {
-      query_string = false
-      cookies      = { forward = "none" }
-    }
+    cache_policy_name          = "Managed-CachingOptimized"
+    origin_request_policy_name = "Managed-CORS-S3Origin"
   }
+
+  ordered_cache_behavior = [
+    {
+      target_origin_id       = "s3" # see `origin`
+      path_pattern           = "/static/*"
+      viewer_protocol_policy = "redirect-to-https"
+
+      allowed_methods = ["GET", "HEAD", "OPTIONS"]
+      cached_methods  = ["GET", "HEAD"]
+
+      use_forwarded_values = false
+
+      cache_policy_name            = "Managed-CachingOptimized"
+      origin_request_policy_name   = "Managed-CORS-S3Origin"
+      response_headers_policy_name = "Managed-SimpleCORS"
+    },
+  ]
 
   viewer_certificate = {
     cloudfront_default_certificate = true
