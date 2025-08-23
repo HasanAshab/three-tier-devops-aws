@@ -9,3 +9,6 @@ db_skip_final_snapshot = false
 # Backend
 backend_service_cpu = 2048
 backend_service_memory = 4096
+
+# Frontend
+frontend_cdn_price_class = "PriceClass_200"
