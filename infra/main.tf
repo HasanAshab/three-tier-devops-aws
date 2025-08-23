@@ -1,3 +1,4 @@
+/*
 module "network" {
   source = "./modules/network"
 
@@ -41,6 +42,8 @@ module "backend" {
   enable_deletion_protection = var.enable_deletion_protection
 }
 
+*/
+
 
 ###########################
 # 1️⃣ S3 Bucket
@@ -49,24 +52,31 @@ module "s3_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "5.5.0"
 
-  bucket = "${local.project_name}-static-site" #todo
+  bucket = "${local.project_name}-static-site"
+  
+  attach_policy = true
+  policy = jsonencode({
+    Version = "2008-10-17",
+    Id = "PolicyForCloudFrontPrivateContent",
+    Statement = [
+        {
+            Sid = "AllowCloudFrontServicePrincipal",
+            Effect = "Allow",
+            Principal = {
+                Service = "cloudfront.amazonaws.com"
+            },
+            Action = "s3:GetObject",
+            Resource = "arn:aws:s3:::${module.s3_bucket.s3_bucket_id}/*",
+            Condition = {
+                StringEquals = {
+                  "AWS:SourceArn" = module.cdn.cloudfront_distribution_arn
+                }
+            }
+        }
+    ]
+  })
 
-  # Website hosting
-  website = {
-    index_document = "index.html"
-    error_document = "error.html"
-  }
-
-  # Public access block
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-
-  tags = {
-    Owner       = "user"
-    Environment = "dev"
-  }
+  force_destroy = true
 }
 
 module "cdn" {
@@ -80,25 +90,28 @@ module "cdn" {
   is_ipv6_enabled     = true
   price_class         = "PriceClass_100"
   retain_on_delete    = false
-
+  default_root_object = "index.html"
 
   ### Enable Logging ###
   # logging_config = {
   #   bucket = "logs-my-cdn.s3.amazonaws.com"
   # }
 
-  origin = {
-    s3 = {
-      domain_name = module.s3_bucket.s3_bucket_bucket_domain_name
-      s3_origin_config = {
-        origin_access_identity = "s3_oai"
-      }
+  create_origin_access_control = true
+  origin_access_control = {
+    s3_oac = {
+      description      = "CloudFront access to S3"
+      origin_type      = "s3"
+      signing_behavior = "always"
+      signing_protocol = "sigv4"
     }
   }
 
-  create_origin_access_identity = true
-  origin_access_identities = {
-    s3_oai = "Allow CloudFront to access S3"
+  origin = {
+    s3 = {
+      domain_name = module.s3_bucket.s3_bucket_bucket_regional_domain_name
+      origin_access_control = "s3_oac"
+    }
   }
 
   default_cache_behavior = {

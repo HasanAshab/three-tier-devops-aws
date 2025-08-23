@@ -1,10 +1,10 @@
 # Three Tier Architecture AWS
 
 
-[![CI-CD pipeline](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/cicd.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/cicd.yaml)
-[![Drift Detection](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/drift.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/drift.yaml)
+[![CI-CD pipeline](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/terraform-cicd.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/terraform-cicd.yaml)
+[![Drift Detection](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/terraform-drift.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/terraform-drift.yaml)
 
-This repository contains the infrastructure (IaC) for [Spring + React App](https://github.com/HasanAshab/three-tier-aws/) project.
+This folder contains the infrastructure (IaC) for [Spring + React App](https://github.com/HasanAshab/three-tier-aws/) project.
 
 
 ## 🏗️ Architecture Diagram
@@ -14,7 +14,7 @@ This repository contains the infrastructure (IaC) for [Spring + React App](https
 
 ## ⚙️ CI/CD Pipeline
 
-![Push Pipeline](static/images/cicd.png)
+![CI/CD Pipeline](static/images/cicd.png)
 ---
 
 
@@ -28,7 +28,7 @@ Follow these steps to deploy the infrastructure using Terraform:
 cp .env.sample .env
 ```
 
-Edit `.env` and override necessary variables according to your environment (e.g., subscription ID, tenant ID, resource group names).
+Edit `.env` and override necessary variables according to your environment (e.g., AWS credentials, database credentials).
 
 ### 2. Load Environment Variables
 
