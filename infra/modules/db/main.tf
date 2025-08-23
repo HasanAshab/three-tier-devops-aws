@@ -50,6 +50,32 @@ module "aws_rds" {
   apply_immediately      = var.apply_immediately
   skip_final_snapshot    = var.skip_final_snapshot
   deletion_protection    = var.enable_deletion_protection
-  parameters = local.parameters
-  options = local.options
+  
+  parameters = [
+    {
+      name  = "character_set_client"
+      value = "utf8mb4"
+    },
+    {
+      name  = "character_set_server"
+      value = "utf8mb4"
+    }
+  ]
+
+  options =  [
+    {
+      option_name = "MARIADB_AUDIT_PLUGIN"
+
+      option_settings = [
+        {
+          name  = "SERVER_AUDIT_EVENTS"
+          value = "CONNECT"
+        },
+        {
+          name  = "SERVER_AUDIT_FILE_ROTATIONS"
+          value = "37"
+        },
+      ]
+    },
+  ]
 }

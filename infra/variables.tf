@@ -69,3 +69,12 @@ variable "backend_service_memory" {
   type        = number
   default     = 2048
 }
+
+
+# Frontend
+
+variable "frontend_cdn_price_class" {
+  description = "CloudFront price class"
+  type        = string
+  default     = "PriceClass_100"
+}

@@ -1,24 +1,83 @@
-resource "aws_ecs_service" "this" {
-  name            = "mongodb"
-  cluster         = aws_ecs_cluster.foo.id
-  task_definition = aws_ecs_task_definition.mongo.arn
-  desired_count   = 3
-  iam_role        = aws_iam_role.foo.arn
-  depends_on      = [aws_iam_role_policy.foo]
+module "s3_bucket" {
+  source  = "terraform-aws-modules/s3-bucket/aws"
+  version = "5.5.0"
 
-  ordered_placement_strategy {
-    type  = "binpack"
-    field = "cpu"
+  bucket = "${var.name_prefix}-fe-s3"
+  
+  attach_policy = true
+  policy = templatefile("${path.module}/modules/frontend/templates/s3_bucket_policy.json", {
+    bucket_id = module.s3_bucket.s3_bucket_id
+    cf_arn  = module.cdn.cloudfront_distribution_arn
+  })
+
+  force_destroy = !var.enable_deletion_protection
+}
+
+module "cdn" {
+  source = "terraform-aws-modules/cloudfront/aws"
+
+  aliases = var.domain_names
+
+  comment             = "CloudFront for ${module.s3_bucket.s3_bucket_id} bucket"
+  enabled             = true
+  is_ipv6_enabled     = true
+  price_class         = var.cdn_price_class
+  retain_on_delete    = var.enable_deletion_protection
+  default_root_object = var.default_root_object
+
+  ### Enable Logging ###
+  # logging_config = {
+  #   bucket = "logs-my-cdn.s3.amazonaws.com"
+  # }
+
+  create_origin_access_control = true
+  origin_access_control = {
+    s3_oac = {
+      description      = "CloudFront access to S3"
+      origin_type      = "s3"
+      signing_behavior = "always"
+      signing_protocol = "sigv4"
+    }
   }
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.foo.arn
-    container_name   = "mongo"
-    container_port   = 8080
+  origin = {
+    s3 = {
+      domain_name = module.s3_bucket.s3_bucket_bucket_regional_domain_name
+      origin_access_control = "s3_oac" # see `origin_access_control`
+    }
   }
 
-  placement_constraints {
-    type       = "memberOf"
-    expression = "attribute:ecs.availability-zone in [us-west-2a, us-west-2b]"
+  default_cache_behavior = {
+    target_origin_id         = "s3" # see`origin`
+    viewer_protocol_policy   = "redirect-to-https"
+    
+    allowed_methods          = var.cdn_allowed_methods
+    cached_methods           = var.cdn_cached_methods
+
+    use_forwarded_values     = false
+
+    cache_policy_name          = "Managed-CachingOptimized"
+    origin_request_policy_name = "Managed-CORS-S3Origin"
+  }
+
+  ordered_cache_behavior = [
+    {
+      target_origin_id       = "s3" # see `origin`
+      path_pattern           = "/static/*"
+      viewer_protocol_policy = "redirect-to-https"
+
+      allowed_methods = var.cdn_allowed_methods
+      cached_methods  = var.cdn_cached_methods
+
+      use_forwarded_values = false
+
+      cache_policy_name            = "Managed-CachingOptimized"
+      origin_request_policy_name   = "Managed-CORS-S3Origin"
+      response_headers_policy_name = "Managed-SimpleCORS"
+    },
+  ]
+
+  viewer_certificate = {
+    cloudfront_default_certificate = true
   }
 }

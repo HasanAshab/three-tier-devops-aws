@@ -1,4 +1,3 @@
-/*
 module "network" {
   source = "./modules/network"
 
@@ -42,110 +41,12 @@ module "backend" {
   enable_deletion_protection = var.enable_deletion_protection
 }
 
-*/
+module "frontend" {
+  source = "./modules/frontend"
 
+  name_prefix = local.project_name
+  domain_names = ["three-tier-app.com", "www.three-tier-app.com"]
+  cdn_price_class = var.frontend_cdn_price_class
 
-module "s3_bucket" {
-  source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "5.5.0"
-
-  bucket = "${local.project_name}-static-site"
-  
-  attach_policy = true
-  policy = jsonencode({
-    Version = "2008-10-17",
-    Id = "PolicyForCloudFrontPrivateContent",
-    Statement = [
-        {
-            Sid = "AllowCloudFrontServicePrincipal",
-            Effect = "Allow",
-            Principal = {
-                Service = "cloudfront.amazonaws.com"
-            },
-            Action = "s3:GetObject",
-            Resource = "arn:aws:s3:::${module.s3_bucket.s3_bucket_id}/*",
-            Condition = {
-                StringEquals = {
-                  "AWS:SourceArn" = module.cdn.cloudfront_distribution_arn
-                }
-            }
-        }
-    ]
-  })
-
-  force_destroy = true
-}
-
-module "cdn" {
-  source = "terraform-aws-modules/cloudfront/aws"
-
-  ### Domain Name ###
-  # aliases = ["three-tier-app.com"]
-
-  comment             = "CloudFront for ${local.project_name} static site"
-  enabled             = true
-  is_ipv6_enabled     = true
-  price_class         = "PriceClass_100"
-  retain_on_delete    = false
-  default_root_object = "index.html"
-
-  ### Enable Logging ###
-  # logging_config = {
-  #   bucket = "logs-my-cdn.s3.amazonaws.com"
-  # }
-
-  create_origin_access_control = true
-  origin_access_control = {
-    s3_oac = {
-      description      = "CloudFront access to S3"
-      origin_type      = "s3"
-      signing_behavior = "always"
-      signing_protocol = "sigv4"
-    }
-  }
-
-  origin = {
-    s3 = {
-      domain_name = module.s3_bucket.s3_bucket_bucket_regional_domain_name
-      origin_access_control = "s3_oac" # see `origin_access_control`
-    }
-  }
-
-  default_cache_behavior = {
-    target_origin_id         = "s3" # see`origin`
-    viewer_protocol_policy   = "redirect-to-https"
-    
-    allowed_methods          = ["GET", "HEAD", "OPTIONS"]
-    cached_methods           = ["GET", "HEAD"]
-    
-    use_forwarded_values     = false
-
-    cache_policy_name          = "Managed-CachingOptimized"
-    origin_request_policy_name = "Managed-CORS-S3Origin"
-  }
-
-  ordered_cache_behavior = [
-    {
-      target_origin_id       = "s3" # see `origin`
-      path_pattern           = "/static/*"
-      viewer_protocol_policy = "redirect-to-https"
-
-      allowed_methods = ["GET", "HEAD", "OPTIONS"]
-      cached_methods  = ["GET", "HEAD"]
-
-      use_forwarded_values = false
-
-      cache_policy_name            = "Managed-CachingOptimized"
-      origin_request_policy_name   = "Managed-CORS-S3Origin"
-      response_headers_policy_name = "Managed-SimpleCORS"
-    },
-  ]
-
-  viewer_certificate = {
-    cloudfront_default_certificate = true
-  }
-}
-
-output "cloudfront_domain" {
-  value = module.cdn.cloudfront_distribution_domain_name
+  enable_deletion_protection = var.enable_deletion_protection
 }
