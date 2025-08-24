@@ -37,6 +37,18 @@ variable "db_instance_class" {
   default     = "db.t3.micro"
 }
 
+variable "db_allocated_storage" {
+  description = "Allocated storage in GB for the database"
+  type        = number
+  default     = 5
+}
+
+variable "db_max_allocated_storage" {
+  description = "Maximum allocated storage in GB for the database"
+  type        = number
+  default     = 0
+}
+
 variable "db_name" {
   description = "Database name"
   type        = string

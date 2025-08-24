@@ -43,10 +43,13 @@ module "db" {
   vpc_id                   = module.network.vpc_id
   subnet_ids               = module.network.private_subnets
   source_security_group_id = module.backend.security_group_id
-  instance_class           = var.db_instance_class
   db_name                  = var.db_name
   username                 = var.db_username
   password                 = var.db_password
+
+  instance_class        = var.db_instance_class
+  allocated_storage     = var.db_allocated_storage
+  max_allocated_storage = var.db_max_allocated_storage
 
   apply_immediately          = var.db_apply_immediately
   skip_final_snapshot        = var.db_skip_final_snapshot

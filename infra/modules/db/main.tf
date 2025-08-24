@@ -22,10 +22,11 @@ module "aws_rds" {
 
   identifier = "${var.name_prefix}-db"
 
-  engine            = var.engine
-  engine_version    = var.engine_version
-  instance_class    = var.instance_class
-  allocated_storage = 5
+  engine                = var.engine
+  engine_version        = var.engine_version
+  instance_class        = var.instance_class
+  allocated_storage     = var.allocated_storage
+  max_allocated_storage = var.max_allocated_storage
 
   db_name                     = var.db_name
   username                    = var.username

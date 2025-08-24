@@ -35,6 +35,16 @@ variable "instance_class" {
   type        = string
 }
 
+variable "allocated_storage" {
+  description = "Database allocated storage"
+  type        = number
+}
+
+variable "max_allocated_storage" {
+  description = "Database max allocated storage"
+  type        = number
+}
+
 variable "db_name" {
   description = "Database name"
   type        = string
