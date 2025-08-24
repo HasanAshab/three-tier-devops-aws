@@ -27,10 +27,10 @@ module "aws_rds" {
   instance_class    = var.instance_class
   allocated_storage = 5
 
-  db_name  = var.db_name
-  username = var.username
-  password = var.password
-  port     = tostring(var.port)
+  db_name                     = var.db_name
+  username                    = var.username
+  password                    = var.password
+  port                        = tostring(var.port)
   manage_master_user_password = false
 
   vpc_security_group_ids = [module.aws_sg.security_group_id]
@@ -50,7 +50,7 @@ module "aws_rds" {
   apply_immediately      = var.apply_immediately
   skip_final_snapshot    = var.skip_final_snapshot
   deletion_protection    = var.enable_deletion_protection
-  
+
   parameters = [
     {
       name  = "character_set_client"
@@ -62,7 +62,7 @@ module "aws_rds" {
     }
   ]
 
-  options =  [
+  options = [
     {
       option_name = "MARIADB_AUDIT_PLUGIN"
 

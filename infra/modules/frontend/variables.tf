@@ -21,19 +21,19 @@ variable "cdn_price_class" {
 variable "default_root_object" {
   description = "Default root object for the CloudFront distribution"
   type        = string
-  default = "index.html"
+  default     = "index.html"
 }
 
 variable "cdn_allowed_methods" {
   description = "List of allowed methods for the CloudFront distribution"
   type        = list(string)
-  default = ["GET", "HEAD", "OPTIONS"]
+  default     = ["GET", "HEAD", "OPTIONS"]
 }
 
 variable "cdn_cached_methods" {
   description = "List of cached methods for the CloudFront distribution"
   type        = list(string)
-  default = ["GET", "HEAD"]
+  default     = ["GET", "HEAD"]
 }
 
 variable "certificate_arn" {

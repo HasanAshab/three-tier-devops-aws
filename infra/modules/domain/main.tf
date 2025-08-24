@@ -79,9 +79,9 @@ resource "aws_route53_record" "acm_validation" {
 resource "aws_acm_certificate_validation" "this" {
   for_each = aws_acm_certificate.this
 
-  certificate_arn         = each.value.arn
+  certificate_arn = each.value.arn
   validation_record_fqdns = [
-    for dvo in each.value.domain_validation_options : 
+    for dvo in each.value.domain_validation_options :
     aws_route53_record.acm_validation["${each.key}-${dvo.domain_name}"].fqdn
   ]
 
@@ -95,9 +95,9 @@ resource "aws_acm_certificate_validation" "this_us_east_1" {
 
   provider = aws.us_east_1
 
-  certificate_arn         = each.value.arn
+  certificate_arn = each.value.arn
   validation_record_fqdns = [
-    for dvo in each.value.domain_validation_options : 
+    for dvo in each.value.domain_validation_options :
     aws_route53_record.acm_validation["${each.key}-${dvo.domain_name}"].fqdn
   ]
 

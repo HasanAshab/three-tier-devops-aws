@@ -3,11 +3,11 @@ module "s3_bucket" {
   version = "5.5.0"
 
   bucket = "${var.name_prefix}-fe-s3"
-  
+
   attach_policy = true
   policy = templatefile("${path.module}/templates/s3_bucket_policy.json", {
     bucket_id = module.s3_bucket.s3_bucket_id
-    cf_arn  = module.cdn.cloudfront_distribution_arn
+    cf_arn    = module.cdn.cloudfront_distribution_arn
   })
 
   force_destroy = !var.enable_deletion_protection
@@ -42,19 +42,19 @@ module "cdn" {
 
   origin = {
     s3 = {
-      domain_name = module.s3_bucket.s3_bucket_bucket_regional_domain_name
+      domain_name           = module.s3_bucket.s3_bucket_bucket_regional_domain_name
       origin_access_control = "s3_oac" # see `origin_access_control`
     }
   }
 
   default_cache_behavior = {
-    target_origin_id         = "s3" # see`origin`
-    viewer_protocol_policy   = "redirect-to-https"
-    
-    allowed_methods          = var.cdn_allowed_methods
-    cached_methods           = var.cdn_cached_methods
+    target_origin_id       = "s3" # see`origin`
+    viewer_protocol_policy = "redirect-to-https"
 
-    use_forwarded_values     = false
+    allowed_methods = var.cdn_allowed_methods
+    cached_methods  = var.cdn_cached_methods
+
+    use_forwarded_values = false
 
     cache_policy_name          = "Managed-CachingOptimized"
     origin_request_policy_name = "Managed-CORS-S3Origin"

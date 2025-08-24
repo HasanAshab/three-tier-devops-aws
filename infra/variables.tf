@@ -1,3 +1,9 @@
+variable "environment" {
+  description = "Environment name"
+  type        = string
+  default     = "development"
+}
+
 variable "aws_region" {
   description = "AWS region"
   type        = string
@@ -7,7 +13,7 @@ variable "aws_region" {
 variable "azs_count" {
   description = "Number of availability zones"
   type        = number
-  default = 2
+  default     = 2
 }
 
 variable "hosted_zone_name" {
@@ -28,19 +34,19 @@ variable "enable_deletion_protection" {
 variable "db_instance_class" {
   description = "Database instance class"
   type        = string
-  default = "db.t3.micro"
+  default     = "db.t3.micro"
 }
 
 variable "db_name" {
   description = "Database name"
   type        = string
-  default = "mydb"
+  default     = "mydb"
 }
 
 variable "db_username" {
   description = "Database username"
   type        = string
-  default = "hasanashab"
+  default     = "hasanashab"
 }
 
 variable "db_password" {
@@ -67,7 +73,7 @@ variable "db_skip_final_snapshot" {
 variable "backend_domains" {
   description = "Backend domains"
   type        = list(string)
-  default = ["api.three-tier-app.com"]
+  default     = ["api.three-tier-app.com"]
 }
 
 variable "backend_service_cpu" {
@@ -88,7 +94,7 @@ variable "backend_service_memory" {
 variable "frontend_domains" {
   description = "Frontend domains"
   type        = list(string)
-  default = ["three-tier-app.com", "www.three-tier-app.com"]
+  default     = ["three-tier-app.com", "www.three-tier-app.com"]
 }
 
 variable "frontend_cdn_price_class" {

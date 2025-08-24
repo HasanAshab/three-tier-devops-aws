@@ -21,13 +21,13 @@ variable "source_security_group_id" {
 variable "engine" {
   description = "Database engine"
   type        = string
-  default = "mysql"
+  default     = "mysql"
 }
 
 variable "engine_version" {
   description = "Database engine version"
   type        = string
-  default = "8.0.43"
+  default     = "8.0.43"
 }
 
 variable "instance_class" {
@@ -54,31 +54,31 @@ variable "password" {
 variable "port" {
   description = "Database port"
   type        = number
-  default = 3306
+  default     = 3306
 }
 
 variable "maintenance_window" {
   description = "Maintenance window"
   type        = string
-  default = "Mon:00:00-Mon:03:00"  
+  default     = "Mon:00:00-Mon:03:00"
 }
 
 variable "backup_window" {
   description = "Backup window"
   type        = string
-  default = "03:00-06:00"  
+  default     = "03:00-06:00"
 }
 
 variable "major_engine_version" {
   description = "Major engine version"
   type        = string
-  default = null
+  default     = null
 }
 
 variable "family" {
   description = "Family"
   type        = string
-  default = null
+  default     = null
 }
 
 variable "apply_immediately" {

@@ -17,7 +17,7 @@ provider "aws" {
   default_tags {
     tags = {
       Project     = local.project_name
-      Environment = "dev"
+      Environment = var.environment
     }
   }
 }
@@ -29,7 +29,7 @@ provider "aws" {
   default_tags {
     tags = {
       Project     = local.project_name
-      Environment = "dev"
+      Environment = var.environment
     }
   }
 }

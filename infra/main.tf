@@ -8,6 +8,9 @@ module "network" {
 
 module "domain" {
   source = "./modules/domain"
+  providers = {
+    aws.us_east_1 = aws.us_east_1
+  }
 
   hosted_zone_name = var.hosted_zone_name
   records = {
@@ -22,8 +25,8 @@ module "domain" {
       }
     },
     backend = {
-      domains                = var.backend_domains
-      type                   = "A"
+      domains = var.backend_domains
+      type    = "A"
       alias = {
         name                   = module.backend.alb_dns_name
         zone_id                = module.backend.alb_zone_id

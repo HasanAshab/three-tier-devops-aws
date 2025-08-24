@@ -42,13 +42,13 @@ variable "db_password" {
 variable "container_image" {
   description = "Container image"
   type        = string
-  default = "ghcr.io/hasanashab/three-tier-devops-aws-backend:latest"
+  default     = "ghcr.io/hasanashab/three-tier-devops-aws-backend:latest"
 }
 
 variable "container_port" {
   description = "Container port to expose"
   type        = number
-  default = 8080
+  default     = 8080
 }
 
 variable "service_cpu" {
