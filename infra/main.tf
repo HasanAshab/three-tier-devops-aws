@@ -6,6 +6,33 @@ module "network" {
   azs_count = var.azs_count
 }
 
+module "domain" {
+  source = "./modules/domain"
+  
+  hosted_zone_name = var.hosted_zone_name
+  records = {
+    frontend = {
+      domains = var.frontend_domains
+      type = "A"
+      provider = aws.us_east_1 # Required for CloudFront
+      alias = {
+        name    = module.frontend.cdn_domain_name
+        zone_id = module.frontend.cdn_hosted_zone_id
+        evaluate_target_health = false
+      }
+    },
+    backend = {
+      domains = var.backend_domains
+      type = "A"
+      alias = {
+        name = module.backend.alb_dns_name
+        zone_id = module.backend.alb_zone_id
+        evaluate_target_health = true
+      }
+    }
+  } 
+}
+
 module "db" {
   source = "./modules/db"
 
@@ -45,7 +72,7 @@ module "frontend" {
   source = "./modules/frontend"
 
   name_prefix = local.project_name
-  domain_names = ["three-tier-app.com", "www.three-tier-app.com"]
+  domain_names = var.frontend_domains
   cdn_price_class = var.frontend_cdn_price_class
 
   enable_deletion_protection = var.enable_deletion_protection

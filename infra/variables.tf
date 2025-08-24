@@ -10,6 +10,12 @@ variable "azs_count" {
   default = 2
 }
 
+variable "hosted_zone_name" {
+  description = "The name of the Route 53 Hosted Zone (e.g., example.com)"
+  type        = string
+  default     = "three-tier-app.com"
+}
+
 variable "enable_deletion_protection" {
   description = "Deletion protection"
   type        = bool
@@ -58,6 +64,12 @@ variable "db_skip_final_snapshot" {
 
 # Backend 
 
+variable "backend_domains" {
+  description = "Backend domains"
+  type        = list(string)
+  default = ["api.three-tier-app.com"]
+}
+
 variable "backend_service_cpu" {
   description = "Backend service CPU"
   type        = number
@@ -72,6 +84,12 @@ variable "backend_service_memory" {
 
 
 # Frontend
+
+variable "frontend_domains" {
+  description = "Frontend domains"
+  type        = list(string)
+  default = ["three-tier-app.com", "www.three-tier-app.com"]
+}
 
 variable "frontend_cdn_price_class" {
   description = "CloudFront price class"

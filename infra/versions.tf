@@ -5,11 +5,6 @@ terraform {
       source  = "hashicorp/aws"
       version = "6.5.0"
     }
-    # ------ Azure Provider -------
-    # azurerm = {
-    #   source  = "hashicorp/azurerm"
-    #   version = "4.33.0"
-    # }
   }
   required_version = " >= 1.10.0"
 }
@@ -18,6 +13,7 @@ terraform {
 # ------ AWS Provider -------
 provider "aws" {
   region = var.aws_region
+
   default_tags {
     tags = {
       Project     = local.project_name
@@ -26,7 +22,15 @@ provider "aws" {
   }
 }
 
-# ------ Azure Provider -------
-# provider "azurerm" {
-#   features {}
-# }
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+
+  default_tags {
+    tags = {
+      Project     = local.project_name
+      Environment = "dev"
+    }
+  }
+}
+
