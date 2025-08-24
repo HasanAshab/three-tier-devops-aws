@@ -8,17 +8,11 @@ variable "records" {
   type = map(object({
     domains  = list(string)
     type     = string
-    provider = optional(any)
+    use_us_east_1_provider = optional(bool, false)
     alias    = optional(object({
       name                   = string
       zone_id                = string
       evaluate_target_health = bool
     }))
   }))
-}
-
-variable "create_cert" {
-  description = "Whether to create certificate for domains"
-  type        = bool
-  default     = true
 }

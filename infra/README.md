@@ -66,5 +66,3 @@ For production:
 terraform apply -var-file=./envs/prod.tfvars
 ```
 ---
-
-## 🟦🟩 Deployment Strategy
