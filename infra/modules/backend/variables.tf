@@ -65,3 +65,8 @@ variable "enable_deletion_protection" {
   description = "Enable deletion protection"
   type        = bool
 }
+
+variable "certificate_arn" {
+  description = "ACM certificate ARN for HTTPS"
+  type        = string
+}

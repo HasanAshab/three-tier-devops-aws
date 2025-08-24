@@ -57,3 +57,19 @@ resource "aws_route53_record" "acm_validation" {
   ttl             = 60
   records         = [each.value.record]
 }
+
+resource "aws_acm_certificate_validation" "this" {
+  for_each = aws_acm_certificate.this
+
+  provider = lookup(var.records[each.key], "provider", null)
+
+  certificate_arn         = each.value.arn
+  validation_record_fqdns = [
+    for dvo in each.value.domain_validation_options : 
+    aws_route53_record.acm_validation["${each.key}-${dvo.domain_name}"].fqdn
+  ]
+
+  timeouts {
+    create = "5m"
+  }
+}

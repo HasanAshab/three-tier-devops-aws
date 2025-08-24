@@ -35,3 +35,8 @@ variable "cdn_cached_methods" {
   type        = list(string)
   default = ["GET", "HEAD"]
 }
+
+variable "certificate_arn" {
+  description = "ACM certificate ARN for HTTPS"
+  type        = string
+}

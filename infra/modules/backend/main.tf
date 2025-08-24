@@ -14,13 +14,13 @@ module "alb" {
       description = "HTTP web traffic"
       cidr_ipv4   = "0.0.0.0/0"
     }
-    # all_https = {
-    #   from_port   = 443
-    #   to_port     = 443
-    #   ip_protocol = "tcp"
-    #   description = "HTTPS web traffic"
-    #   cidr_ipv4   = "0.0.0.0/0"
-    # }
+    all_https = {
+      from_port   = 443
+      to_port     = 443
+      ip_protocol = "tcp"
+      description = "HTTPS web traffic"
+      cidr_ipv4   = "0.0.0.0/0"
+    }
   }
   security_group_egress_rules = {
     all = {
@@ -35,19 +35,19 @@ module "alb" {
   # }
 
   listeners = {
-    ### Redirect HTTP to HTTPS ###
-    # http-https-redirect = {
-    #   port     = 80
-    #   protocol = "HTTP"
-    #   redirect = {
-    #     port        = "443"
-    #     protocol    = "HTTPS"
-    #     status_code = "HTTP_301"
-    #   }
-    # }
-    backend = {
+    http-https-redirect = {
       port     = 80
       protocol = "HTTP"
+      redirect = {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
+    }
+    backend = {
+      port            = 443
+      protocol        = "HTTPS"
+      certificate_arn = var.certificate_arn
       forward = {
         target_group_key = "backend"
       }

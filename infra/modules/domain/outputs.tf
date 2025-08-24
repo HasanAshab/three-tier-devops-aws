@@ -1,6 +1,6 @@
 output "certificate_arns" {
-  description = "Map of service names to their ACM certificate ARN."
-  value       = { for service, cert in aws_acm_certificate.this : service => cert.arn }
+  description = "Map of service names to their validated ACM certificate ARN."
+  value       = { for service, validation in aws_acm_certificate_validation.this : service => validation.certificate_arn }
 }
 
 output "domain_validation_records" {

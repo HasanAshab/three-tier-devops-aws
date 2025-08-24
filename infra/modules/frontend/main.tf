@@ -5,7 +5,7 @@ module "s3_bucket" {
   bucket = "${var.name_prefix}-fe-s3"
   
   attach_policy = true
-  policy = templatefile("${path.module}/modules/frontend/templates/s3_bucket_policy.json", {
+  policy = templatefile("${path.module}/templates/s3_bucket_policy.json", {
     bucket_id = module.s3_bucket.s3_bucket_id
     cf_arn  = module.cdn.cloudfront_distribution_arn
   })
@@ -78,6 +78,8 @@ module "cdn" {
   ]
 
   viewer_certificate = {
-    cloudfront_default_certificate = true
+    acm_certificate_arn      = var.certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 }

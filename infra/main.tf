@@ -65,6 +65,7 @@ module "backend" {
   db_username = module.db.db_instance_username
   db_password = var.db_password
 
+  certificate_arn = module.domain.certificate_arns["backend"]
   enable_deletion_protection = var.enable_deletion_protection
 }
 
@@ -75,5 +76,6 @@ module "frontend" {
   domain_names = var.frontend_domains
   cdn_price_class = var.frontend_cdn_price_class
 
+  certificate_arn = module.domain.certificate_arns["frontend"]
   enable_deletion_protection = var.enable_deletion_protection
 }
