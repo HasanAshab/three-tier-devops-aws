@@ -1,63 +1,147 @@
-# Three Tier App DevOps with AWS
+# Three-Tier DevOps AWS Project
+[![Frontend CI](https://github.com/HasanAshab/three-tier-devops-aws/actions/workflows/frontend-ci.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-devops-aws/actions/workflows/frontend-ci.yaml)
+[![Backend CI](https://github.com/HasanAshab/three-tier-devops-aws/actions/workflows/backend-ci.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-devops-aws/actions/workflows/backend-ci.yaml)
 
-**Frontend**  
-[![CI pipeline](https://github.com/HasanAshab/three-tier-devops-azure/actions/workflows/frontend-ci.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-devops-azure/actions/workflows/frontend-ci.yaml)
-[![image size](https://ghcr-badge.egpl.dev/hasanashab/three-tier-devops-azure-frontend/size)](https://github.com/HasanAshab/three-tier-devops-azure/pkgs/container/three-tier-devops-azure-frontend)
+A comprehensive DevOps implementation showcasing modern cloud infrastructure, CI/CD pipelines, and Infrastructure as Code (IaC) practices for a three-tier web application on AWS.
 
-**Backend** 
-[![CI pipeline](https://github.com/HasanAshab/three-tier-devops-azure/actions/workflows/backend-ci.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-devops-azure/actions/workflows/backend-ci.yaml)
-[![image size](https://ghcr-badge.egpl.dev/hasanashab/three-tier-devops-azure-backend/size)](https://github.com/HasanAshab/three-tier-devops-azure/pkgs/container/three-tier-devops-azure-backend)
+## 🎯 Project Overview
 
+This project demonstrates enterprise-grade DevOps practices by implementing a complete cloud infrastructure and deployment pipeline for a three-tier web application. While the application code (React frontend and Spring Boot backend) is sourced from the open-source community, **all DevOps engineering, infrastructure design, and automation is original work**.
 
-This is a DevOps-enhanced deployment of a [Spring Boot + React full stack app](https://github.com/purshink/ReactJS-Spring-Boot-Full-Stack-App), restructured and productionized with best practices for containerization, CI/CD, and cloud deployment.
+### What I Built
 
----
+- **Complete AWS Infrastructure** - Terraform modules for scalable, secure cloud architecture
+- **CI/CD Pipelines** - Automated testing, building, and deployment workflows
+- **Infrastructure as Code** - Modular, reusable Terraform configurations
+- **Security & Compliance** - Best practices for cloud security and monitoring
+- **Multi-Environment Support** - Dev/staging/production environment management
 
-## 🚀 DevOps Features Implemented
+## 🏗️ Architecture
 
-* **Dockerized Build**: Multi-stage Dockerfiles for lean image sizes.
-* **Local Development**: Supports `docker-compose` with hot reload for local debugging.
-* **Azure App Service Deployment**: Web app is containerized and deployed using Azure-native resources.
-* **CI with GitHub Actions**: This project is equipped with a robust DevSecOps CI/CD pipeline.
+![Architecture Diagram](infra/static/images/architecture.png)
 
----
+### Infrastructure Components
 
-## 🧑‍💻 Local Development
+- **Frontend Tier**: React SPA served via CloudFront CDN + S3
+- **Backend Tier**: Spring Boot API on ECS Fargate with Application Load Balancer
+- **Data Tier**: MySQL RDS with automated backups and scaling
+- **Networking**: VPC with public/private subnets across multiple AZs
+- **Security**: SSL/TLS encryption, security groups, and IAM roles
+- **DNS**: Route 53 hosted zone with custom domain management
 
-To spin up the application locally with Docker:
+Read more about the architecture and design choices in the [Infrastructure as Code](infra/README.md) section.
 
-```bash
-docker-compose up
+## 🚀 DevOps Features
+
+### Infrastructure as Code
+```
+infra/
+├── modules/           # Reusable Terraform modules
+│   ├── network/      # VPC, subnets, NAT gateway
+│   ├── frontend/     # S3, CloudFront, ACM certificates
+│   ├── backend/      # ECS, ALB, security groups
+│   ├── db/          # RDS MySQL with security
+│   └── domain/      # Route 53, SSL certificates
+├── envs/            # Environment-specific configurations
+├── bin/             # Deployment and utility scripts
+└── tests/           # Infrastructure testing
 ```
 
-Once running, the server will be accessible at:
-**[http://localhost:4200](http://localhost:4200)**
+### CI/CD Pipeline Architecture
+Push:
+![CI/CD Pipeline](static/images/cicd/push.png)
 
-Frontend supports hot reload out of the box.
+Pull Request:
+![CI/CD Pipeline](static/images/cicd/pr.png)
 
-## 🏗️ Infrastructure
-Read more about the [infrastructure](./infra/README.md).
 
-## ⚙️ CI/CD Pipeline
+### Key DevOps Practices
 
-This project is equipped with a robust DevSecOps CI/CD pipeline via GitHub Actions:
+✅ **Infrastructure as Code** - 100% Terraform-managed infrastructure  
+✅ **GitOps Workflow** - Git-based infrastructure and deployment management  
+✅ **Multi-Environment** - Separate dev/staging/production environments  
+✅ **Security First** - SSL/TLS, security groups, least privilege access  
+✅ **Monitoring & Logging** - CloudWatch integration and alerting  
+✅ **Cost Optimization** - Spot instances, autoscaling, resource tagging  
+✅ **Disaster Recovery** - Multi-AZ deployment, automated backups  
 
-* **Push Pipeline**
-  ![Push Pipeline](static/images/cicd/push.png)
+## 🛠️ Technology Stack
 
-* **Pull Request Pipeline**
-  ![Pull Request Pipeline](static/images/cicd/pr.png)
+### DevOps & Infrastructure
+- **Cloud Platform**: AWS
+- **Infrastructure as Code**: Terraform
+- **CI/CD**: GitHub Actions
+- **Containerization**: Docker, ECS Fargate
+- **Monitoring**: CloudWatch
+- **Security**: AWS IAM, Security Groups, ACM
+
+### Application Stack (Community Source)
+- **Frontend**: React, TypeScript
+- **Backend**: Spring Boot, Java
+- **Database**: MySQL
+- **Development**: Docker Compose
+
+## 📋 Prerequisites
+
+- AWS CLI configured with appropriate permissions
+- Terraform >= 1.10.0
+- Docker and Docker Compose
+- Node.js and npm (for local development)
+- Java 17+ and Maven (for local development)
+
+## 🚀 Quick Start
+
+### Local Development
+
+```bash
+# Navigate to source directory
+cd src
+
+# Start all services with Docker Compose
+docker-compose up -d
+
+# Access the application
+# Frontend: http://localhost:4200
+# Backend API: http://localhost:8080
+# Database: localhost:3306
+```
+
+## 📁 Project Structure
+
+```
+├── .github/workflows/     # CI/CD pipeline definitions
+├── infra/                # Infrastructure as Code
+│   ├── modules/          # Reusable Terraform modules
+│   ├── envs/            # Environment configurations
+│   ├── bin/             # Deployment scripts
+│   └── tests/           # Infrastructure tests
+├── src/                 # Application source code
+│   ├── frontend/        # React application (community source)
+│   ├── backend/         # Spring Boot API (community source)
+│   └── db/             # Database configurations
+└── static/             # Documentation assets
+```
+
+## 🤝 Contributing
+
+This project focuses on DevOps practices and infrastructure. Contributions welcome for:
+
+- Infrastructure improvements and optimizations
+- CI/CD pipeline enhancements
+- Security and compliance features
+- Documentation and best practices
+
+
+## 🙏 Acknowledgments
+
+- **Application Code**: Frontend (React) and Backend (Spring Boot) applications are sourced from the open-source community
+- **DevOps Implementation**: All infrastructure, CI/CD, and deployment automation is original work
+- **AWS Community**: For excellent documentation and best practices
+
+## 📞 Contact
+
+For questions about the DevOps implementation, infrastructure design, or deployment processes, please open an issue or reach out directly.
 
 ---
 
-## 🐞 Known Issues
-
-You can find ongoing bugs, limitations, or caveats in the [Known Issues](./KNOWN_ISSUES.md) document.
-
----
-
-
-## 🙋‍♂️ About Me
-**Hasan Ashab** – DevOps Engineer  
-LinkedIn: [@hasan-ashab](https://www.linkedin.com/in/hasan-ashab)
----
+**Note**: This project demonstrates DevOps engineering capabilities including Infrastructure as Code, CI/CD pipeline design, cloud architecture, and automation. The application code serves as a vehicle to showcase these DevOps practices in a real-world scenario.

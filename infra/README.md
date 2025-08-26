@@ -1,8 +1,8 @@
 # Three Tier Architecture AWS
 
 
-[![CI-CD pipeline](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/terraform-cicd.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/terraform-cicd.yaml)
-[![Drift Detection](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/terraform-drift.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/terraform-drift.yaml)
+[![CI-CD pipeline](https://github.com/HasanAshab/three-tier-devops-aws/actions/workflows/terraform-cicd.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-aws/actions/workflows/terraform-cicd.yaml)
+[![Drift Detection](https://github.com/HasanAshab/three-tier-devops-aws/actions/workflows/terraform-drift.yaml/badge.svg)](https://github.com/HasanAshab/three-tier-aws-infra/actions/workflows/terraform-drift.yaml)
 
 This folder contains the infrastructure (IaC) for [Spring + React App](https://github.com/HasanAshab/three-tier-aws/) project.
 
@@ -11,6 +11,14 @@ This folder contains the infrastructure (IaC) for [Spring + React App](https://g
 
 ![Architecture Diagram](static/images/architecture.png)
 
+## Infrastructure Components
+
+- **Frontend Tier**: React SPA served via CloudFront CDN + S3
+- **Backend Tier**: Spring Boot API on ECS Fargate with Application Load Balancer
+- **Data Tier**: MySQL RDS with automated backups and scaling
+- **Networking**: VPC with public/private subnets across multiple AZs
+- **Security**: SSL/TLS encryption, security groups, and IAM roles
+- **DNS**: Route 53 hosted zone with custom domain management
 
 ## ⚙️ CI/CD Pipeline
 
