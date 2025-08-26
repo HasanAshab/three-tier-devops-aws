@@ -1,4 +1,4 @@
-name: Backend CI pipeline
+name: Backend CI/CD pipeline
 on:
   push:
     branches:
