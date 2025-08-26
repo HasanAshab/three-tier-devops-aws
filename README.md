@@ -48,11 +48,11 @@ infra/
 ```
 
 ### CI/CD Pipeline
-Push:
-![CI/CD Pipeline](static/images/cicd/push.png)
+Frontend:
+![Frontend](static/images/cicd/frontend.png)
 
-Pull Request:
-![CI/CD Pipeline](static/images/cicd/pr.png)
+Backend:
+![Backend](static/images/cicd/backend.png)
 
 #### Continuous Deployment
 
