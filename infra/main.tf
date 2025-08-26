@@ -13,25 +13,15 @@ module "domain" {
   }
 
   hosted_zone_name = var.hosted_zone_name
-  records = {
+  # Create certificates first, records will be added separately
+  certificate_domains = {
     frontend = {
       domains                = var.frontend_domains
-      type                   = "A"
       use_us_east_1_provider = true # Required for CloudFront
-      alias = {
-        name                   = module.frontend.cdn_domain_name
-        zone_id                = module.frontend.cdn_hosted_zone_id
-        evaluate_target_health = false
-      }
-    },
+    }
     backend = {
-      domains = var.backend_domains
-      type    = "A"
-      alias = {
-        name                   = module.backend.alb_dns_name
-        zone_id                = module.backend.alb_zone_id
-        evaluate_target_health = true
-      }
+      domains                = var.backend_domains
+      use_us_east_1_provider = false
     }
   }
 }
@@ -84,4 +74,30 @@ module "frontend" {
 
   certificate_arn            = module.domain.certificate_arns["frontend"]
   enable_deletion_protection = var.enable_deletion_protection
+}
+
+# Route53 records for frontend (created after CloudFront distribution)
+resource "aws_route53_record" "frontend" {
+  zone_id = module.domain.hosted_zone_id
+  name    = var.frontend_domains[0]
+  type    = "A"
+
+  alias {
+    name                   = module.frontend.cdn_domain_name
+    zone_id                = module.frontend.cdn_hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+# Route53 records for backend
+resource "aws_route53_record" "backend" {
+  zone_id = module.domain.hosted_zone_id
+  name    = var.backend_domains[0]
+  type    = "A"
+
+  alias {
+    name                   = module.backend.alb_dns_name
+    zone_id                = module.backend.alb_zone_id
+    evaluate_target_health = true
+  }
 }

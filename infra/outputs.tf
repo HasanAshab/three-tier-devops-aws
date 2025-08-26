@@ -1,5 +1,5 @@
 output "url" {
-  value = "https://" + var.frontend_domains[0]
+  value = "https://${var.frontend_domains[0]}"
 }
 
 output "ecs_cluster_name" {

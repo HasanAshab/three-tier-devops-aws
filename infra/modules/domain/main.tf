@@ -2,26 +2,9 @@ resource "aws_route53_zone" "this" {
   name = var.hosted_zone_name
 }
 
-resource "aws_route53_record" "this" {
-  for_each = var.records
-
-  zone_id = aws_route53_zone.this.zone_id
-  name    = each.value.domains[0]
-  type    = each.value.type
-
-  dynamic "alias" {
-    for_each = lookup(each.value, "alias", null) != null ? [each.value.alias] : []
-    content {
-      name                   = alias.value.name
-      zone_id                = alias.value.zone_id
-      evaluate_target_health = alias.value.evaluate_target_health
-    }
-  }
-}
-
 resource "aws_acm_certificate" "this" {
   for_each = {
-    for k, v in var.records : k => v if !v.use_us_east_1_provider
+    for k, v in var.certificate_domains : k => v if !v.use_us_east_1_provider
   }
 
   domain_name = each.value.domains[0]
@@ -37,7 +20,7 @@ resource "aws_acm_certificate" "this" {
 
 resource "aws_acm_certificate" "this_us_east_1" {
   for_each = {
-    for k, v in var.records : k => v if v.use_us_east_1_provider
+    for k, v in var.certificate_domains : k => v if v.use_us_east_1_provider
   }
 
   provider = aws.us_east_1
@@ -55,17 +38,30 @@ resource "aws_acm_certificate" "this_us_east_1" {
 
 resource "aws_route53_record" "acm_validation" {
   for_each = {
-    for dvo in flatten([
-      for cert_key, cert in aws_acm_certificate.this : [
-        for dvo in cert.domain_validation_options : {
-          key     = "${cert_key}-${dvo.domain_name}"
-          zone_id = aws_route53_zone.this.zone_id
-          name    = dvo.resource_record_name
-          type    = dvo.resource_record_type
-          record  = dvo.resource_record_value
-        }
-      ]
-    ]) : dvo.key => dvo
+    for dvo in concat(
+      flatten([
+        for cert_key, cert in aws_acm_certificate.this : [
+          for dvo in cert.domain_validation_options : {
+            key     = "${cert_key}-${dvo.domain_name}"
+            zone_id = aws_route53_zone.this.zone_id
+            name    = dvo.resource_record_name
+            type    = dvo.resource_record_type
+            record  = dvo.resource_record_value
+          }
+        ]
+      ]),
+      flatten([
+        for cert_key, cert in aws_acm_certificate.this_us_east_1 : [
+          for dvo in cert.domain_validation_options : {
+            key     = "${cert_key}-${dvo.domain_name}"
+            zone_id = aws_route53_zone.this.zone_id
+            name    = dvo.resource_record_name
+            type    = dvo.resource_record_type
+            record  = dvo.resource_record_value
+          }
+        ]
+      ])
+    ) : dvo.key => dvo
   }
 
   allow_overwrite = true

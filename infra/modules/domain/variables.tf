@@ -3,16 +3,10 @@ variable "hosted_zone_name" {
   type        = string
 }
 
-variable "records" {
-  description = "Map of service names to their domains, DNS type, optional provider, and alias configuration."
+variable "certificate_domains" {
+  description = "Map of service names to their certificate domain configuration."
   type = map(object({
     domains                = list(string)
-    type                   = string
     use_us_east_1_provider = optional(bool, false)
-    alias = optional(object({
-      name                   = string
-      zone_id                = string
-      evaluate_target_health = bool
-    }))
   }))
 }

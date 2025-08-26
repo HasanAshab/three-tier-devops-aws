@@ -13,3 +13,8 @@ output "domain_validation_records" {
     { for service, cert in aws_acm_certificate.this_us_east_1 : service => cert.domain_validation_options }
   )
 }
+
+output "hosted_zone_id" {
+  description = "The Route53 hosted zone ID"
+  value       = aws_route53_zone.this.zone_id
+}
