@@ -47,12 +47,18 @@ infra/
 └── tests/           # Infrastructure testing
 ```
 
-### CI/CD Pipeline Architecture
+### CI/CD Pipeline
 Push:
 ![CI/CD Pipeline](static/images/cicd/push.png)
 
 Pull Request:
 ![CI/CD Pipeline](static/images/cicd/pr.png)
+
+#### Continuous Deployment
+
+**Frontend CD**: Automated deployment pipeline that uploads build artifacts to S3 (requires manual approval) on successful push to the main branch from `/src/frontend`. The React application is built, optimized, and deployed to S3, then distributed globally via CloudFront CDN. Requires manual approval for production deployment.
+
+**Backend CD**: Automated deployment pipeline that deploys containerized Spring Boot application to ECS Fargate (requires manual approval) on every successful push to the main branch from `/src/backend`. Uses rolling updates for zero-downtime deployments with health checks and automatic rollback capabilities.
 
 
 ### Key DevOps Practices
