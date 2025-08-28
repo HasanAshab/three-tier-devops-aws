@@ -5,6 +5,8 @@
 A comprehensive DevOps implementation showcasing modern cloud infrastructure, CI/CD pipelines, and Infrastructure as Code (IaC) practices for a three-tier web application on AWS.
 
 ## 🎯 Project Overview
+![Project Overview](static/images/project.png)
+
 
 This project demonstrates enterprise-grade DevOps practices by implementing a complete cloud infrastructure and deployment pipeline for a three-tier web application. While the application code (React frontend and Spring Boot backend) is sourced from the open-source community, **all DevOps engineering, infrastructure design, and automation is original work**.
 
