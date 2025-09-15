@@ -1,4 +1,4 @@
-# Building a Production-Ready Three-Tier DevOps Pipeline on AWS
+# Production-Ready Three-Tier Architecture on AWS with DevOps Best Practices
 
 *A deep dive into Infrastructure as Code, CI/CD automation, and cloud architecture best practices*
 
