@@ -5,6 +5,7 @@
 ---
 
 ## Why This Project?
+![Project](https://github.com/HasanAshab/three-tier-devops-aws/blob/main/static/images/project.png?raw=true)
 
 Most DevOps tutorials barely scratch the surface — a container here, a pipeline there. But when you step into **real-world production**, you quickly realize there’s more at stake:
 
@@ -25,7 +26,7 @@ Instead of reinventing the wheel, I leaned on the proven three-tier model — **
 * **Backend**: Spring Boot API on **ECS Fargate + ALB**
 * **Database**: Managed **RDS MySQL** with multi-AZ support
 
-![Architecture](infra/static/images/architecture.png)
+![Architecture](https://github.com/HasanAshab/three-tier-devops-aws/blob/main/infra/static/images/architecture.png?raw=true)
 
 ---
 
@@ -100,16 +101,16 @@ Two kinds of pipelines — **infra** and **apps**.
 * Approval gates before `apply`
 * Drift detection alerts
 
-![Infra Pipeline](infra/static/images/cicd.png)
+![Infra Pipeline](https://github.com/HasanAshab/three-tier-devops-aws/blob/main/infra/static/images/cicd.png?raw=true)
 
 
 ### Application Pipelines
 
 * **Frontend**: Build React → Test → Deploy → CloudFront invalidate
-  ![Frontend Pipeline](static/images/cicd/frontend.png)
+  ![Frontend Pipeline](https://github.com/HasanAshab/three-tier-devops-aws/blob/main/static/images/cicd/frontend.png?raw=true)
 
 * **Backend**: Build Spring Boot → Dockerize → Push to ECR → Deploy to ECS
-  ![Backend Pipeline](static/images/cicd/backend.png)
+  ![Backend Pipeline](https://github.com/HasanAshab/three-tier-devops-aws/blob/main/static/images/cicd/backend.png?raw=true)
 
 Automation handled the boring stuff; approval gates kept prod safe.
 
@@ -187,4 +188,16 @@ This wasn’t just about “getting it to work” — it was about proving you c
 * Security and cost optimization must be designed in, not patched later
 * Monitoring turns chaos into control
 
-Check out the [source code](https://github.com/HasanAshab/three-tier-aws) at GitHub for more details.
+Check out the [source code](https://github.com/HasanAshab/three-tier-devops-aws) at GitHub for more details.
+
+
+---
+
+## 📬 Contact
+
+If you’d like to connect, collaborate, or discuss DevOps, feel free to reach out:
+
+* **Website**: [hasan-ashab](https://hasan-ashab.vercel.app/)
+* **GitHub**: [github.com/HasanAshab](https://github.com/HasanAshab/)
+* **LinkedIn**: [linkedin.com/in/hasan-ashab](https://linkedin.com/in/hasan-ashab/)
+
