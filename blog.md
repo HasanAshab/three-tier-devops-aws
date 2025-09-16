@@ -1,4 +1,4 @@
-# Production-Ready Three-Tier Architecture on AWS with DevOps Best Practices
+# Cost-Optimized Three-Tier Architecture on AWS with DevOps
 
 *A deep dive into Infrastructure as Code, CI/CD automation, and cloud architecture best practices*
 
@@ -28,7 +28,6 @@ Instead of reinventing the wheel, I leaned on the proven three-tier model — **
 
 ![Architecture](https://github.com/HasanAshab/three-tier-devops-aws/blob/main/infra/static/images/architecture.png?raw=true)
 
----
 
 ## Frontend: Global Delivery with CloudFront
 
@@ -41,7 +40,6 @@ Static doesn’t mean simple. The frontend setup ensures global speed and securi
 
 *Result: Fast, cost-effective and secure delivery to users anywhere in the world.*
 
----
 
 ## Backend: Serverless Containers with ECS Fargate
 
@@ -54,7 +52,6 @@ No servers to babysit. Fargate handles orchestration:
 
 *Result: Scalable API that grows or shrinks with traffic.*
 
----
 
 ## Database: Resilient RDS MySQL
 
@@ -67,7 +64,6 @@ AWS RDS took care of the heavy lifting:
 
 *Result: Reliable data persistence with minimal ops overhead.*
 
----
 
 ## Infrastructure as Code: Modular Terraform
 
@@ -126,7 +122,6 @@ I baked in security instead of bolting it on later:
 * Secrets stored in GitHub + SSM
 * Container + infra scans in every pipeline
 
----
 
 ## Cost Optimization
 
@@ -135,7 +130,6 @@ I baked in security instead of bolting it on later:
 * Lifecycle policies for logs & S3 storage
 * Smaller instances in dev/staging
 
----
 
 ## Monitoring and Observability
 
@@ -146,7 +140,6 @@ CloudWatch everywhere:
 * RDS performance insights
 * Cost alerts to avoid surprises
 
----
 
 ## Multi-Environment Setup
 
@@ -166,16 +159,12 @@ Terraform workspaces + env-specific `tfvars` files gave me:
 * **Tag everything** for cost tracking
 * **Don’t underestimate monitoring** — it’s your lifeline
 
----
-
 ## What’s Next
 
 * Add **WAF** and advanced security
 * Introduce **distributed tracing** with X-Ray
 * Explore **ElastiCache** + DB read replicas
 * Automate **secrets rotation**
-
----
 
 ## Final Thoughts
 
